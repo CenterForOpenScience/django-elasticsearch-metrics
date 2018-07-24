@@ -1,10 +1,19 @@
-# Contributing Guidelines
+# Contributing
 
 ## Setting up for development
 
 * Create and activate a new virtual environment
 * `pip install -r dev-requirements.txt`
-* (Optional, for integration tests) Run elasticsearch: `docker-compose up`
+* (Optional but recommended) Run elasticsearch: `docker-compose up`
+* (Optional but recommended) If you're using a Python 3.6 virtual
+    environment, install the pre-commit hooks, which will
+    format and lint your git staged files:
+
+```
+# The pre-commit CLI was installed above
+pre-commit install
+```
+
 * Run tests using the following commands:
 
 ```

@@ -14,5 +14,5 @@ class ElasticsearchMetricsConfig(AppConfig):
     name = "elasticsearch_metrics"
 
     def ready(self):
-        print('configuring connections')
+        print("configuring connections")
         connections.configure(**settings.ELASTICSEARCH_DSL)

@@ -3,8 +3,12 @@ pytest==3.6.3
 pytest-django==3.3.2
 tox==3.1.2
 
-# Linting
+# Pre-commit hooks
+pre-commit==1.10.4
+
+# Syntax checking
 flake8==3.5.0
+flake8-bugbear==18.2.0; python_version >= '3.5'
 
 # Install this package in development mode
 -e '.'
