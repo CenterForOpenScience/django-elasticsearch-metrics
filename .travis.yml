@@ -6,14 +6,29 @@ python:
   - "3.6"
   - "2.7"
 
-sudo: false
+addons:
+  apt:
+    packages:
+    - oracle-java8-installer
 
 env:
+  global:
+    - ELASTICSEARCH_HOST=localhost:9200
   matrix:
+    # Matches [travis:env] in tox.ini
     - DJANGO=1.11
     - DJANGO=2.0
 
+before_install:
+  - sudo update-java-alternatives -s java-8-oracle
+  - export JAVA_HOME=/usr/lib/jvm/java-8-oracle/jre
+  - java -version
+
 install:
+  - curl -L -o /tmp/es-snap.zip https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-6.1.1.zip
+  - unzip /tmp/es-snap.zip -d /tmp/
+  - /tmp/elasticsearch-*/bin/elasticsearch -E path.repo=/tmp -E repositories.url.allowed_urls='http://*' -E node.attr.testattr=test -d
+  - git clone https://github.com/elastic/elasticsearch.git ../elasticsearch
   - travis_retry pip install -U virtualenv tox tox-travis
 
 script: tox
