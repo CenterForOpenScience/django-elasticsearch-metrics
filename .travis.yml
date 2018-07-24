@@ -24,6 +24,11 @@ before_install:
   - export JAVA_HOME=/usr/lib/jvm/java-8-oracle/jre
   - java -version
 
+# Elasticsearch takes a few seconds to start; make sure it's available
+# https://docs.travis-ci.com/user/database-setup/#ElasticSearch
+before_script:
+  - sleep 10
+
 install:
   - curl -L -o /tmp/es-snap.zip https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-6.1.1.zip
   - unzip /tmp/es-snap.zip -d /tmp/
