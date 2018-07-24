@@ -1,0 +1,34 @@
+# -*- coding: utf-8 -*-
+# vi: set ft=python :
+import os
+import django
+from django.utils.termcolors import colorize
+import konch
+import elasticsearch_dsl
+from elasticsearch_dsl import connections, Search
+
+from elasticsearch_metrics import Metric
+
+# Available options:
+#   'context', 'banner', 'shell', 'prompt', 'output',
+#   'context_format', 'ipy_extensions', 'ipy_autoreload',
+#   'ipy_colors', 'ipy_highlighting_style'
+context = {"dsl": elasticsearch_dsl, "Metric": Metric, "Search": Search}
+konch.config(
+    {
+        "banner": colorize(
+            "Welcome to the django-elasticsearch-metrics shell. Happy hacking!",
+            opts=("bold",),
+        ),
+        "ipy_autoreload": True,
+        "ipy_colors": "linux",
+    }
+)
+
+
+def setup():
+    # Set up django and add the default elasticsearch-py client to the context
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "tests.settings")
+    django.setup()
+    context["client"] = connections.get_connection()
+    konch.config({"context": context})

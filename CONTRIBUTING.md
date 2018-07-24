@@ -28,6 +28,12 @@ pytest -m "not es"
 flake8
 ```
 
+* Run the shell with:
+
+```
+konch
+```
+
 ### (Optional) Run tests in tox
 
 To run tests against the full environment matrix (all supported Python
