@@ -1,6 +1,9 @@
 language: python
 sudo: false
-cache: pip
+cache:
+  pip: true
+  directories:
+    - $HOME/.cache
 
 python:
   - "3.6"
@@ -11,7 +14,8 @@ services:
 
 env:
   global:
-    - ELASTICSEARCH_DEB=elasticsearch-6.3.1
+    - PROJECT_DIR="$PWD"
+    - ELASTICSEARCH_ARCHIVE=elasticsearch-6.3.1.tar.gz
     - ELASTICSEARCH_HOST=127.0.0.1:9200
   matrix:
     # Matches [travis:env] in tox.ini
@@ -19,7 +23,39 @@ env:
     - DJANGO=2.0
 
 before_install:
-  - curl -O https://artifacts.elastic.co/downloads/elasticsearch/$ELASTICSEARCH_DEB.deb && sudo dpkg -i --force-confnew $ELASTICSEARCH_DEB.deb && sudo service elasticsearch restart
+  # cache directories
+  - |
+    mkdir -p $HOME/.cache/downloads
+  # elasticsearch
+  - |
+    cd $HOME/.cache/downloads
+
+    if [ ! -f "$ELASTICSEARCH_ARCHIVE" ]; then
+      curl -SLO https://artifacts.elastic.co/downloads/elasticsearch/$ELASTICSEARCH_ARCHIVE
+    fi
+
+    if [ ! -f "$ELASTICSEARCH_ARCHIVE.sha1.txt" ]; then
+      curl -SLO https://artifacts.elastic.co/downloads/elasticsearch/$ELASTICSEARCH_ARCHIVE.sha512
+    fi
+
+    sha512sum --check $ELASTICSEARCH_ARCHIVE.sha1.txt
+
+    mkdir -p /tmp/elasticsearch
+    tar xzf $ELASTICSEARCH_ARCHIVE -C /tmp/elasticsearch --strip-components=1
+  - /tmp/elasticsearch/bin/elasticsearch > /dev/null & export ELASTICSEARCH_PID=$!
+  # Wait for elasticsearch to come online
+  - |-
+    while true; do
+        sleep 5
+        curl -sf http://localhost:9200/_cluster/health?wait_for_status=yellow
+        if [ $? -eq 0 ]; then
+            break
+        fi
+    done
+  - cd $PROJECT_DIR
+
+before_cache:
+  - kill -9 $ELASTICSEARCH_PID
 
 # Elasticsearch takes a few seconds to start; make sure it's available
 # https://docs.travis-ci.com/user/database-setup/#ElasticSearch
