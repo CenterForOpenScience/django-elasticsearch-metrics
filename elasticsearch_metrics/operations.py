@@ -1,8 +1,10 @@
 from django.db.migrations.operations.base import Operation
 
+
 def _create_metric(metric):
     pass
     # TODO
+
 
 class CreateMetric(Operation):
     reduces_to_sql = False  # Ignore in sqlmigrate
@@ -19,5 +21,6 @@ class CreateMetric(Operation):
         # TODO
 
     def describe(self):
-        # This is used to describe what the operation does in console output.
-        return "Creating Elasticsearch index template for {self.metric}".format(self=self)
+        return "Creating Elasticsearch index template for {self.metric}".format(
+            self=self
+        )
