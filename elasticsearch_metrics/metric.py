@@ -1,7 +1,7 @@
 from django.utils import timezone
 from django.utils.six import add_metaclass
 from elasticsearch_dsl import Document, Date, IndexTemplate
-from elasticsearch_dsl.document import DocumentMeta, DocumentOptions
+from elasticsearch_dsl.document import IndexMeta, DocumentOptions
 
 
 class MetricOptions(DocumentOptions):
@@ -17,7 +17,7 @@ class MetricOptions(DocumentOptions):
         self.template = getattr(meta, "template", None)
 
 
-class MetricMeta(DocumentMeta):
+class MetricMeta(IndexMeta):
     """Metaclass for the base `Metric` class."""
 
     def __new__(cls, name, bases, attrs):
@@ -26,12 +26,6 @@ class MetricMeta(DocumentMeta):
         # which pops off Meta, which we want to read from in
         # MetricOptions.
         return type.__new__(cls, name, bases, attrs)
-
-
-# Python only allows for one metaclass to be selected.
-# Create a metaclass that is the subclass of both DocumentMeta and MetricMeta
-# https://stackoverflow.com/questions/38403795/python-metaclass-conflict-type-error/38404006#38404006
-MetricMeta = type("MetricMeta", (type(Document), MetricMeta), {})
 
 
 @add_metaclass(MetricMeta)
