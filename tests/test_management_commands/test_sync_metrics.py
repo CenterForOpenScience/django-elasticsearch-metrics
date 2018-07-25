@@ -3,7 +3,7 @@ from elasticsearch_metrics.management.commands.sync_metrics import Command
 
 def test_without_args(capsys):
     cmd = Command()
-    cmd.run_from_argv(['manage.py', 'sync_data'])
+    cmd.run_from_argv(['manage.py', 'sync_metrics'])
     out, err = capsys.readouterr()
     assert 'Synchronized metrics.' in out
 
