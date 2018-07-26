@@ -20,17 +20,25 @@ class PreprintView(Metric):
     user_id = Keyword(index=True)
     preprint_id = Keyword(index=True)
 
+    class Index:
+        settings = {"refresh_interval": "5s"}
+
     class Meta:
         # TODO: Make this unnecessary and compute this.
         template_name = "osf_metrics_preprintviews"
         template = "osf_metrics_preprintviews-*"
 
 
-def test_get_index_template():
+def test_get_index_template_returns_template_with_correct_name_and_pattern():
     template = PreprintView.get_index_template()
     assert isinstance(template, IndexTemplate)
     assert template._template_name == "osf_metrics_preprintviews"
     assert "osf_metrics_preprintviews-*" in template.to_dict()["index_patterns"]
+
+
+def test_get_index_template_respects_index_settings():
+    template = PreprintView.get_index_template()
+    assert template._index.to_dict()["settings"] == {"refresh_interval": "5s"}
 
 
 @pytest.mark.xfail

@@ -1,6 +1,6 @@
 from django.utils import timezone
 from django.utils.six import add_metaclass
-from elasticsearch_dsl import Document, Date, IndexTemplate
+from elasticsearch_dsl import Document, Date
 from elasticsearch_dsl.document import IndexMeta, MetaField
 from elasticsearch_metrics.signals import pre_index_template_create
 
@@ -17,6 +17,8 @@ class MetricMeta(IndexMeta):
         return new_cls
 
 
+# We need this intermediate BaseMetric class so that
+# we can run MetricMeta ahead of IndexMeta
 @add_metaclass(MetricMeta)
 class BaseMetric(object):
     timestamp = Date(doc_values=True)
@@ -35,8 +37,9 @@ class BaseMetric(object):
 
     @classmethod
     def get_index_template(cls):
-        # TODO: mapping
-        return IndexTemplate(name=cls._template_name, template=cls._template)
+        return cls._index.as_template(
+            template_name=cls._template_name, pattern=cls._template
+        )
 
     @classmethod
     def get_index_name(cls, date=None):
