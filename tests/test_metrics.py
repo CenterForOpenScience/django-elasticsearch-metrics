@@ -32,6 +32,7 @@ class PreprintView(Metric):
 class TestPreprintView:
     @classmethod
     def setup_class(cls):
+        # TODO hook into pytest.mark.es to delete indices
         client().indices.delete(index="*")
 
     @classmethod
@@ -54,6 +55,19 @@ class TestPreprintView:
         assert properties["provider_id"] == {"type": "keyword"}
         assert properties["user_id"] == {"type": "keyword"}
         assert properties["preprint_id"] == {"type": "keyword"}
+
+    @pytest.mark.es
+    def test_create_document(self, client):
+        provider_id = "12345"
+        user_id = "abcde"
+        preprint_id = "zyxwv"
+        doc = PreprintView(
+            provider_id=provider_id, user_id=user_id, preprint_id=preprint_id
+        )
+        doc.save()
+        document = PreprintView.get(id=doc.meta.id, index=PreprintView.get_index_name())
+        # TODO flesh out this test more.  Try to query ES?
+        assert document is not None
 
     def test_get_index_name(self):
         date = dt.date(2020, 2, 14)

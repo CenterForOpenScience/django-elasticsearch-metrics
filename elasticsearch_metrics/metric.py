@@ -1,3 +1,5 @@
+import datetime as dt
+
 from django.conf import settings
 from django.utils import timezone
 from django.utils.six import add_metaclass
@@ -79,3 +81,12 @@ class BaseMetric(object):
 
 class Metric(Document, BaseMetric):
     __doc__ = BaseMetric.__doc__
+
+    def save(cls, using=None, index=None, validate=True, **kwargs):
+        cls.timestamp = dt.datetime.now()
+        if not index:
+            index = cls.get_index_name()
+
+        return super(Metric, cls).save(
+            using=using, index=index, validate=validate, **kwargs
+        )
