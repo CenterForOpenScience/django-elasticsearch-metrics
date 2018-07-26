@@ -3,7 +3,7 @@ import datetime as dt
 
 from django.utils import timezone
 from elasticsearch_metrics import Metric
-from elasticsearch_dsl import IndexTemplate, connections, Text
+from elasticsearch_dsl import IndexTemplate, connections, Keyword
 
 
 @pytest.fixture()
@@ -13,9 +13,9 @@ def client():
 
 class PreprintView(Metric):
     # TODO these fields are not appearing in the mapping
-    provider_id = Text()
-    user_id = Text()
-    preprint_id = Text()
+    provider_id = Keyword(index=True)
+    user_id = Keyword(index=True)
+    preprint_id = Keyword(index=True)
 
     class Meta:
         # TODO: Make this unnecessary and compute this.
@@ -52,7 +52,7 @@ def test_get_index_name_gets_index_for_today_by_default():
     )
 
 
-# @pytest.mark.es
+@pytest.mark.es
 def test_create_metric_creats_template_with_mapping(client):
     PreprintView.create_index_template()
     template_name = PreprintView._template_name
@@ -64,6 +64,6 @@ def test_create_metric_creats_template_with_mapping(client):
     properties = mappings["doc"]["properties"]
     assert "timestamp" in properties
     assert properties["timestamp"] == {"doc_values": True, "type": "date"}
-    assert properties["provider_id"] == {"type": "string"}
-    assert properties["user_id"] == {"type": "string"}
-    assert properties["preprint_id"] == {"type": "string"}
+    assert properties["provider_id"] == {"type": "keyword", "index": True}
+    assert properties["user_id"] == {"type": "keyword", "index": True}
+    assert properties["preprint_id"] == {"type": "keyword", "index": True}

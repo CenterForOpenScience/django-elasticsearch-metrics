@@ -9,7 +9,7 @@ class MetricMeta(IndexMeta):
 
     def __new__(mcls, name, bases, attrs):  # noqa: B902
         meta = attrs.get("Meta", None)
-        new_cls = type.__new__(mcls, name, bases, attrs)
+        new_cls = super(MetricMeta, mcls).__new__(mcls, name, bases, attrs)
         # TODO: Automatically compute template_name and template instead of defaulting to None
         new_cls._template_name = getattr(meta, "template_name", None)
         new_cls._template = getattr(meta, "template", None)
@@ -17,7 +17,7 @@ class MetricMeta(IndexMeta):
 
 
 @add_metaclass(MetricMeta)
-class Metric(Document):
+class BaseMetric(object):
     timestamp = Date(doc_values=True)
 
     class Meta:
@@ -60,3 +60,7 @@ class Metric(Document):
         dateformat = "%Y.%m.%d"
         date_formatted = date.strftime(dateformat)
         return "{}-{}".format(cls._template_name, date_formatted)
+
+
+class Metric(Document, BaseMetric):
+    pass
