@@ -4,7 +4,7 @@ import datetime as dt
 
 from django.utils import timezone
 from elasticsearch_metrics import Metric
-from elasticsearch_dsl import IndexTemplate, connections, Keyword
+from elasticsearch_dsl import IndexTemplate, connections, Keyword, MetaField
 
 from elasticsearch_metrics.signals import pre_index_template_create
 
@@ -85,3 +85,20 @@ def test_create_metric_sends_pre_index_template_create_signal():
     PreprintView.create_index_template()
     assert mock_listener.call_count == 1
     assert "index_template" in mock_listener.call_args[1]
+
+
+# TODO: Can we make this test not use ES?
+@pytest.mark.es
+def test_source_may_be_enabled(client):
+    class MyMetric(Metric):
+        class Meta:
+            template_name = "mymetric"
+            template = "mymetric-*"
+            source = MetaField(enabled=True)
+
+    MyMetric.create_index_template()
+    template_name = MyMetric._template_name
+    template = client.indices.get_template(name=template_name)
+    mappings = template[template_name]["mappings"]
+    assert mappings["doc"]["_all"]["enabled"] is False
+    assert mappings["doc"]["_source"]["enabled"] is True
