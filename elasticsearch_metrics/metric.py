@@ -1,7 +1,7 @@
 from django.utils import timezone
 from django.utils.six import add_metaclass
 from elasticsearch_dsl import Document, Date, IndexTemplate
-from elasticsearch_dsl.document import IndexMeta
+from elasticsearch_dsl.document import IndexMeta, MetaField
 
 
 class MetricMeta(IndexMeta):
@@ -18,15 +18,33 @@ class MetricMeta(IndexMeta):
 
 @add_metaclass(MetricMeta)
 class Metric(Document):
-    timestamp = Date()
+    timestamp = Date(doc_values=True)
+
+    class Meta:
+        dynamic_templates = MetaField([
+            {
+              'strings': {
+                'match': '*',
+                'match_mapping_type': 'string',
+                'mapping':   { 'type': 'string', 'fielddata': {'format': 'doc_values'}, 'doc_values': True, 'index': 'not_analyzed' }
+              }
+            }
+        ])
+        all = MetaField(enabled=False)
+        source = MetaField(enabled=False)
 
     @classmethod
     def create_index_template(cls):
-        pass
+        index_template = cls.get_index_template()
+        index_template.settings(refresh_interval='5s')
+        index_template.document(cls)
+        index_template.save()
+        return index_template
 
     @classmethod
     def get_index_template(cls):
         # TODO: mapping
+        # TODO: _default_ is deprecated in 6.0.0 - do we still want to use this?
         return IndexTemplate(name=cls._template_name, template=cls._template)
 
     @classmethod
