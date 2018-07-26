@@ -1,7 +1,7 @@
-import settings
+from django.conf import settings
 from django.utils import timezone
 from django.utils.six import add_metaclass
-from elasticsearch_dsl import Document, Date, IndexTemplate
+from elasticsearch_dsl import Document, Date, IndexTemplate, Index
 from elasticsearch_dsl.document import IndexMeta, MetaField
 from elasticsearch_metrics.signals import pre_index_template_create
 
@@ -33,6 +33,13 @@ class BaseMetric(object):
         pre_index_template_create.send(cls, index_template=index_template)
         index_template.save()
         return index_template
+
+    @classmethod
+    def create_index(cls):
+        index_name = cls.get_index_name()
+        index = Index(index_name)
+        index.create()
+        return index
 
     @classmethod
     def get_index_template(cls):
