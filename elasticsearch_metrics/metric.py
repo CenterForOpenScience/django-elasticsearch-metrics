@@ -1,8 +1,8 @@
 from django.conf import settings
 from django.utils import timezone
 from django.utils.six import add_metaclass
-from elasticsearch_dsl import Document, Date, IndexTemplate, Index
-from elasticsearch_dsl.document import IndexMeta, MetaField
+from elasticsearch_dsl import Document, Date
+from elasticsearch_dsl.document import IndexMeta, MetaField, Index
 from elasticsearch_metrics.signals import pre_index_template_create
 
 
@@ -18,8 +18,28 @@ class MetricMeta(IndexMeta):
         return new_cls
 
 
+# We need this intermediate BaseMetric class so that
+# we can run MetricMeta ahead of IndexMeta
 @add_metaclass(MetricMeta)
 class BaseMetric(object):
+    """Base metric class with which to define custom metric classes.
+
+    Example usage:
+
+    .. code-block:: python
+
+        from elasticsearch_metrics import Metric
+
+        class PageView(Metric):
+            user_id = Integer()
+
+            class Index:
+                settings = {
+                    "number_of_shards": 2,
+                    "refresh_interval": "5s",
+                }
+    """
+
     timestamp = Date(doc_values=True)
 
     class Meta:
@@ -28,6 +48,7 @@ class BaseMetric(object):
 
     @classmethod
     def create_index_template(cls):
+        """Create an index template for this metric in Elasticsearch."""
         index_template = cls.get_index_template()
         index_template.document(cls)
         pre_index_template_create.send(cls, index_template=index_template)
@@ -43,8 +64,10 @@ class BaseMetric(object):
 
     @classmethod
     def get_index_template(cls):
-        # TODO: mapping
-        return IndexTemplate(name=cls._template_name, template=cls._template)
+        """Return an `IndexTemplate <elasticsearch_dsl.IndexTemplate>` for this metric."""
+        return cls._index.as_template(
+            template_name=cls._template_name, pattern=cls._template
+        )
 
     @classmethod
     def get_index_name(cls, date=None):
@@ -55,4 +78,4 @@ class BaseMetric(object):
 
 
 class Metric(Document, BaseMetric):
-    pass
+    __doc__ = BaseMetric.__doc__
