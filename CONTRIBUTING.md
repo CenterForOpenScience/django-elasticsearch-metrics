@@ -9,6 +9,8 @@
 * (Optional but recommended) If you're using a Python 3.6 virtual
     environment, install the pre-commit hooks, which will
     format and lint your git staged files:
+* Copy settings: `cp settings/local-dist.py settings/local.py`
+
 
 ```
 # The pre-commit CLI was installed above

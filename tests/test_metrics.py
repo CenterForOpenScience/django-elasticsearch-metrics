@@ -1,6 +1,7 @@
 import mock
 import pytest
 import datetime as dt
+import settings
 
 from django.utils import timezone
 from elasticsearch_metrics import Metric
@@ -47,8 +48,7 @@ def test_get_index_name():
 
 def test_get_index_name_gets_index_for_today_by_default():
     today = timezone.now().date()
-    # TODO: should be in settings
-    dateformat = "%Y.%m.%d"
+    dateformat = settings.DATE_FORMAT
     today_formatted = today.strftime(dateformat)
     assert PreprintView.get_index_name() == "osf_metrics_preprintviews-{}".format(
         today_formatted

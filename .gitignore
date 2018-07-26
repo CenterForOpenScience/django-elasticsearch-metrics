@@ -64,3 +64,6 @@ celerybeat-schedule
 .env
 
 !.konchrc
+
+# Local settings files
+local.py
