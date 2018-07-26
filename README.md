@@ -145,6 +145,21 @@ Signals are located in the `elasticsearch_metrics.signals` module.
 * `pre_index_template_create(Metric, index_template)`: Sent before `PUT`ting a new index
     template into Elasticsearch.
 
+
+## Caveats
+
+* `_source` and `_all` are disabled by default on metric indices in order to save
+    disk space. For most metrics use cases, Users will not need to retrieve the source
+    JSON documents. Be sure to understand the consequences of
+    this: https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-source-field.html#_disabling_source .
+    To enable `_source`, you can override it in `class Meta`.
+
+```python
+class MyMetric(Metric):
+    class Meta:
+        source = MetaField(enabled=True)
+```
+
 ## License
 
 MIT Licensed.
