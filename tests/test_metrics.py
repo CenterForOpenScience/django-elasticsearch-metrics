@@ -30,6 +30,7 @@ def test_get_index_template():
     assert "osf_metrics_preprintviews-*" in template.to_dict()["index_patterns"]
 
 
+@pytest.mark.xfail
 def test_get_index_template_returns_template_with_correct_mapping():
     assert 0, "todo"
 
