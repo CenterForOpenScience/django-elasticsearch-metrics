@@ -2,6 +2,7 @@ from django.utils import timezone
 from django.utils.six import add_metaclass
 from elasticsearch_dsl import Document, Date, IndexTemplate
 from elasticsearch_dsl.document import IndexMeta, MetaField
+from elasticsearch_metrics.signals import pre_index_template_create
 
 
 class MetricMeta(IndexMeta):
@@ -21,30 +22,14 @@ class BaseMetric(object):
     timestamp = Date(doc_values=True)
 
     class Meta:
-        dynamic_templates = MetaField(
-            [
-                {
-                    "strings": {
-                        "match": "*",
-                        "match_mapping_type": "string",
-                        "mapping": {
-                            "type": "string",
-                            "fielddata": {"format": "doc_values"},
-                            "doc_values": True,
-                            "index": "not_analyzed",
-                        },
-                    }
-                }
-            ]
-        )
         all = MetaField(enabled=False)
         source = MetaField(enabled=False)
 
     @classmethod
     def create_index_template(cls):
         index_template = cls.get_index_template()
-        index_template.settings(refresh_interval="5s")
         index_template.document(cls)
+        pre_index_template_create.send(cls, index_template=index_template)
         index_template.save()
         return index_template
 

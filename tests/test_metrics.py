@@ -1,9 +1,12 @@
+import mock
 import pytest
 import datetime as dt
 
 from django.utils import timezone
 from elasticsearch_metrics import Metric
 from elasticsearch_dsl import IndexTemplate, connections, Keyword
+
+from elasticsearch_metrics.signals import pre_index_template_create
 
 
 @pytest.fixture()
@@ -53,17 +56,24 @@ def test_get_index_name_gets_index_for_today_by_default():
 
 
 @pytest.mark.es
-def test_create_metric_creats_template_with_mapping(client):
+def test_create_metric_creates_template_with_mapping(client):
     PreprintView.create_index_template()
     template_name = PreprintView._template_name
     template = client.indices.get_template(name=template_name)
     mappings = template[template_name]["mappings"]
     assert mappings["doc"]["_all"]["enabled"] is False
     assert mappings["doc"]["_source"]["enabled"] is False
-    assert "dynamic_templates" in mappings["doc"]
     properties = mappings["doc"]["properties"]
     assert "timestamp" in properties
     assert properties["timestamp"] == {"doc_values": True, "type": "date"}
     assert properties["provider_id"] == {"type": "keyword", "index": True}
     assert properties["user_id"] == {"type": "keyword", "index": True}
     assert properties["preprint_id"] == {"type": "keyword", "index": True}
+
+
+def test_create_metric_sends_pre_index_template_create_signal():
+    mock_listener = mock.Mock()
+    pre_index_template_create.connect(mock_listener)
+    PreprintView.create_index_template()
+    assert mock_listener.call_count == 1
+    assert "index_template" in mock_listener.call_args[1]
