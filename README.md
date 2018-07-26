@@ -91,22 +91,27 @@ class PageView(Metric):
 
     class Index:
         settings = {
-            "number_of_shards": 2
+            "number_of_shards": 2,
+            "refresh_interval": "5s",
         }
 ```
 
-You can even override the default template index name and glob pattern.
+## Overriding the default template name and pattern
+
 
 ```python
 class PageView(Metric):
     user_id = Integer()
 
     class Index:
+        settings = {
+            "number_of_shards": 2,
+            "refresh_interval": "5s",
+        }
+
+    class Meta:
         template_name = "myapp_pviews"
         template = "myapp_pviews-*"
-        settings = {
-            "number_of_shard": 2
-        }
 ```
 
 
@@ -132,6 +137,13 @@ python manage.py sync_metrics
 ```
 python manage.py clean_metrics myapp.PageView --older-than 45 --time-unit days 
 ```
+
+## Signals
+
+Signals are located in the `elasticsearch_metrics.signals` module.
+
+* `pre_index_template_create(Metric, index_template)`: Sent before `PUT`ting a new index
+    template into Elasticsearch.
 
 ## License
 

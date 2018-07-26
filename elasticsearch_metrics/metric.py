@@ -21,6 +21,24 @@ class MetricMeta(IndexMeta):
 # we can run MetricMeta ahead of IndexMeta
 @add_metaclass(MetricMeta)
 class BaseMetric(object):
+    """Base metric class with which to define custom metric classes.
+
+    Example usage:
+
+    .. code-block:: python
+
+        from elasticsearch_metrics import Metric
+
+        class PageView(Metric):
+            user_id = Integer()
+
+            class Index:
+                settings = {
+                    "number_of_shards": 2,
+                    "refresh_interval": "5s",
+                }
+    """
+
     timestamp = Date(doc_values=True)
 
     class Meta:
@@ -29,6 +47,7 @@ class BaseMetric(object):
 
     @classmethod
     def create_index_template(cls):
+        """Create an index template for this metric in Elasticsearch."""
         index_template = cls.get_index_template()
         index_template.document(cls)
         pre_index_template_create.send(cls, index_template=index_template)
@@ -37,6 +56,7 @@ class BaseMetric(object):
 
     @classmethod
     def get_index_template(cls):
+        """Return an `IndexTemplate <elasticsearch_dsl.IndexTemplate>` for this metric."""
         return cls._index.as_template(
             template_name=cls._template_name, pattern=cls._template
         )
@@ -51,4 +71,4 @@ class BaseMetric(object):
 
 
 class Metric(Document, BaseMetric):
-    pass
+    __doc__ = BaseMetric.__doc__
