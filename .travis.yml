@@ -57,11 +57,6 @@ before_install:
 before_cache:
   - kill -9 $ELASTICSEARCH_PID
 
-# Elasticsearch takes a few seconds to start; make sure it's available
-# https://docs.travis-ci.com/user/database-setup/#ElasticSearch
-before_script:
-  - sleep 10
-
 install:
   - travis_retry pip install -U virtualenv tox tox-travis
 
