@@ -53,7 +53,6 @@ class TestPreprintView:
 
     @pytest.mark.es
     def test_create_index(self, client):
-        PreprintView.create_index_template()
         PreprintView.create_index()
         name = PreprintView.get_index_name()
         mapping = client.indices.get_mapping(index=name)
@@ -65,7 +64,6 @@ class TestPreprintView:
 
     @pytest.mark.es
     def test_create_document(self, client):
-        PreprintView.create_index_template()
         provider_id = "12345"
         user_id = "abcde"
         preprint_id = "zyxwv"
