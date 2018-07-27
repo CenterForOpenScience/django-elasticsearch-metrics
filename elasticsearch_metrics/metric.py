@@ -82,11 +82,11 @@ class BaseMetric(object):
 class Metric(Document, BaseMetric):
     __doc__ = BaseMetric.__doc__
 
-    def save(cls, using=None, index=None, validate=True, **kwargs):
-        cls.timestamp = dt.datetime.now()
+    def save(self, using=None, index=None, validate=True, **kwargs):
+        self.timestamp = dt.datetime.now()
         if not index:
-            index = cls.get_index_name()
+            index = self.get_index_name()
 
-        return super(Metric, cls).save(
+        return super(Metric, self).save(
             using=using, index=index, validate=validate, **kwargs
         )
