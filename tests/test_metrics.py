@@ -21,7 +21,7 @@ class PreprintView(Metric):
     preprint_id = Keyword(index=True)
 
     class Index:
-        settings = {"refresh_interval": "5s"}
+        settings = {"refresh_interval": "-1"}
 
     class Meta:
         # TODO: Make this unnecessary and compute this.
@@ -38,7 +38,7 @@ def test_get_index_template_returns_template_with_correct_name_and_pattern():
 
 def test_get_index_template_respects_index_settings():
     template = PreprintView.get_index_template()
-    assert template._index.to_dict()["settings"] == {"refresh_interval": "5s"}
+    assert template._index.to_dict()["settings"] == {"refresh_interval": "-1"}
 
 
 @pytest.mark.xfail
