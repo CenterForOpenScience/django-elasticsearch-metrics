@@ -7,7 +7,6 @@ cache:
 
 env:
   global:
-    - PROJECT_DIR="$PWD"
     - ELASTICSEARCH_ARCHIVE=elasticsearch-6.3.1.tar.gz
     - ELASTICSEARCH_HOST=127.0.0.1:9200
 
@@ -67,7 +66,7 @@ before_install:
             break
         fi
     done
-  - cd $PROJECT_DIR
+  - cd $TRAVIS_BUILD_DIR
 
 before_cache:
   - kill -9 $ELASTICSEARCH_PID
