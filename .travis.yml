@@ -5,22 +5,37 @@ cache:
   directories:
     - $HOME/.cache
 
-python:
-  - "3.6"
-  - "2.7"
-
-services:
-  - elasticsearch
-
 env:
   global:
     - PROJECT_DIR="$PWD"
     - ELASTICSEARCH_ARCHIVE=elasticsearch-6.3.1.tar.gz
     - ELASTICSEARCH_HOST=127.0.0.1:9200
-  matrix:
-    # Matches [travis:env] in tox.ini
-    - DJANGO=1.11
-    - DJANGO=2.0
+
+##### Testing #####
+matrix:
+  fast_finish: true
+
+  include:
+    - python: "2.7"
+      env:
+      - TOXENV=py27-django111
+    - python: "3.6"
+      env:
+      - TOXENV=py36-django111
+    - python: "3.6"
+      env:
+      - TOXENV=py36-django20
+
+    # Syntax checks
+    - python: "3.6"
+      env: TOXENV=lint
+
+install:
+  - travis_retry pip install -U tox
+
+script: tox
+
+##### Elastic search #####
 
 before_install:
   # cache directories
@@ -57,26 +72,14 @@ before_install:
 before_cache:
   - kill -9 $ELASTICSEARCH_PID
 
-install:
-  - travis_retry pip install -U virtualenv tox tox-travis
+#### Automatically release tagged commits to PyPI ####
 
-script: tox
-
-jobs:
-  include:
-  - stage: PyPI Release
-    if: tag IS present
-    python: "3.6"
-    env: []
-    # Override before_install, install, and script to no-ops
-    install: true
-    script: echo "Releasing to PyPI..."
-    after_success: true
-    deploy:
-      provider: pypi
-      user: cos
-      password:
-        secure: o0x3QFFjsQZkchCA17wWdQbWpphhGDyEhWbiGdq1t5p9SDqqsQgzNKdLgVf13QnnkA2HP1RXex81POtZ/Idz52EWn3540/Yx8zFTXnyFN0GZcJqcmm8NIAB7cMjbNuDeQMQDW6VduElRDWJeikMN3dGARVVAqC4Xs4vf8uWcGeIuOcdy1d5wV2avLyXJgi1UDxAjXxHpDxfUKtKv6/w0NCcRgRf5Z6poLTRxyRZkYD2mkEDcXa1NfmSdBOv+pJlMyC17W9vPi+fiDntxnem1vfpjlr3g0MLIDtVUvnLU0XS//o7oJWUHEhXn6jmsbDl3RJ2N8XrV87LpfQTzR3b8q3iXxmD7Pqmv6VtZdxBrOaaVLiWK3idT70a/JswBzyyzeYiB0NdAvizjccg6NEJ0XLrzSFQErpB16hV8jMPkjhHrJvlMYbgiMQruvqIYAjxWt+nHMEwx03GngPF9xVWrPI1p61GSDZhEBDsspXF1yBCldOP3neqgmMrkC2oVHcIOrfQTpzyLiRehfVa2UTPTqA3zT9LPrxVRXaikKOslrfvlf26k7ntQqz6ItRNTX6BC0x2Mfi0Ns1umcLkIJrRLxWINSImxY3w07O4Kn8dsKX+uzsDTmpQ2DcLdK4pn3BL6gxAx6Rk5M3hB8qXVbwO3noSSzAymdNELcqS/WfBXhxE=
-      on:
-        tags: true
-      distributions: sdist bdist_wheel
+# TODO: Get build stage working with `matrix`
+deploy:
+  provider: pypi
+  user: cos
+  password:
+    secure: o0x3QFFjsQZkchCA17wWdQbWpphhGDyEhWbiGdq1t5p9SDqqsQgzNKdLgVf13QnnkA2HP1RXex81POtZ/Idz52EWn3540/Yx8zFTXnyFN0GZcJqcmm8NIAB7cMjbNuDeQMQDW6VduElRDWJeikMN3dGARVVAqC4Xs4vf8uWcGeIuOcdy1d5wV2avLyXJgi1UDxAjXxHpDxfUKtKv6/w0NCcRgRf5Z6poLTRxyRZkYD2mkEDcXa1NfmSdBOv+pJlMyC17W9vPi+fiDntxnem1vfpjlr3g0MLIDtVUvnLU0XS//o7oJWUHEhXn6jmsbDl3RJ2N8XrV87LpfQTzR3b8q3iXxmD7Pqmv6VtZdxBrOaaVLiWK3idT70a/JswBzyyzeYiB0NdAvizjccg6NEJ0XLrzSFQErpB16hV8jMPkjhHrJvlMYbgiMQruvqIYAjxWt+nHMEwx03GngPF9xVWrPI1p61GSDZhEBDsspXF1yBCldOP3neqgmMrkC2oVHcIOrfQTpzyLiRehfVa2UTPTqA3zT9LPrxVRXaikKOslrfvlf26k7ntQqz6ItRNTX6BC0x2Mfi0Ns1umcLkIJrRLxWINSImxY3w07O4Kn8dsKX+uzsDTmpQ2DcLdK4pn3BL6gxAx6Rk5M3hB8qXVbwO3noSSzAymdNELcqS/WfBXhxE=
+  on:
+    tags: true
+  distributions: sdist bdist_wheel
