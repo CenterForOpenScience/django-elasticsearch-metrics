@@ -29,7 +29,7 @@ def setup():
     # Set up django and add the default elasticsearch-py client and Metric to the context
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "tests.settings")
     django.setup()
-    from elasticsearch_metrics.metric import Metric
+    from elasticsearch_metrics.metrics import Metric
     context["client"] = connections.get_connection()
     context["Metric"] = Metric
     konch.config({"context": context})
