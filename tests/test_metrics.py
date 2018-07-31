@@ -52,8 +52,8 @@ class TestPreprintView:
         assert template._index.to_dict()["settings"] == {"refresh_interval": "-1"}
 
     @pytest.mark.es
-    def test_create_index(self, client):
-        PreprintView.create_index()
+    def test_init(self, client):
+        PreprintView.init()
         name = PreprintView.get_index_name()
         mapping = client.indices.get_mapping(index=name)
         properties = mapping[name]["mappings"]["doc"]["properties"]

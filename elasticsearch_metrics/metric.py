@@ -1,5 +1,3 @@
-import datetime as dt
-
 from django.conf import settings
 from django.utils import timezone
 from django.utils.six import add_metaclass
@@ -58,11 +56,6 @@ class BaseMetric(object):
         return index_template
 
     @classmethod
-    def create_index(cls):
-        cls.init(index=cls.get_index_name())
-        return
-
-    @classmethod
     def get_index_template(cls):
         """Return an `IndexTemplate <elasticsearch_dsl.IndexTemplate>` for this metric."""
         return cls._index.as_template(
@@ -80,8 +73,18 @@ class BaseMetric(object):
 class Metric(Document, BaseMetric):
     __doc__ = BaseMetric.__doc__
 
+    @classmethod
+    def init(cls, index=None, using=None):
+        """
+        Create the index and populate the mappings in elasticsearch.
+        """
+        i = cls._index
+        name = index or cls.get_index_name()
+        i = i.clone(name=name)
+        i.save(using=using)
+
     def save(self, using=None, index=None, validate=True, **kwargs):
-        self.timestamp = dt.datetime.now()
+        self.timestamp = timezone.now()
         if not index:
             index = self.get_index_name()
 
