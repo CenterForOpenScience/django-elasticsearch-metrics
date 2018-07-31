@@ -10,6 +10,7 @@
     environment, install the pre-commit hooks, which will
     format and lint your git staged files:
 
+
 ```
 # The pre-commit CLI was installed above
 pre-commit install

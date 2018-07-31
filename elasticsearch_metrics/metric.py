@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.utils import timezone
 from django.utils.six import add_metaclass
 from elasticsearch_dsl import Document, Date
@@ -64,11 +65,26 @@ class BaseMetric(object):
     @classmethod
     def get_index_name(cls, date=None):
         date = date or timezone.now().date()
-        # TODO: Make dateformat configurable
-        dateformat = "%Y.%m.%d"
+        dateformat = settings.DATE_FORMAT
         date_formatted = date.strftime(dateformat)
         return "{}-{}".format(cls._template_name, date_formatted)
 
 
 class Metric(Document, BaseMetric):
     __doc__ = BaseMetric.__doc__
+
+    @classmethod
+    def init(cls, index=None, using=None):
+        """
+        Create the index and populate the mappings in elasticsearch.
+        """
+        return super(Metric, cls).init(index=index or cls.get_index_name(), using=using)
+
+    def save(self, using=None, index=None, validate=True, **kwargs):
+        self.timestamp = timezone.now()
+        if not index:
+            index = self.get_index_name()
+
+        return super(Metric, self).save(
+            using=using, index=index, validate=validate, **kwargs
+        )
