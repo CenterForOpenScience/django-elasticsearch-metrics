@@ -125,6 +125,24 @@ class PageView(Metric):
         template = "myapp_pviews-*"
 ```
 
+## Abstract metrics
+
+```python
+from elasticsearch_metrics.metric import Metric
+from elasticsearch_dsl import Integer
+
+class MyBaseMetric(Metric):
+    user_id = Integer()
+
+    class Meta:
+        abstract = True
+
+
+class PageView(MyBaseMetric):
+    class Meta:
+        app_label = "myapp"
+```
+
 
 ## Configuration
 

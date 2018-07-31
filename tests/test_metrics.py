@@ -107,6 +107,20 @@ class TestGetIndexTemplate:
         # template is not specified, so it's generated
         assert "dummymetric-*" in template.to_dict()["index_patterns"]
 
+    def test_inheritance(self):
+        class MyBaseMetric(Metric):
+            user_id = Keyword(index=True)
+
+            class Meta:
+                abstract = True
+
+        class ConcreteMetric(MyBaseMetric):
+            class Meta:
+                app_label = "dummyapp"
+
+        template = ConcreteMetric.get_index_template()
+        assert template._template_name == "dummyapp_concretemetric"
+
 
 class TestIntegration:
     @classmethod

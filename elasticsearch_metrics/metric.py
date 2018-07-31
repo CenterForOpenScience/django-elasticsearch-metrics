@@ -24,6 +24,7 @@ class MetricMeta(IndexMeta):
 
         template_name = getattr(meta, "template_name", None)
         template = getattr(meta, "template", None)
+        abstract = getattr(meta, "abstract", False)
 
         if not template_name or not template:
             app_label = getattr(meta, "app_label", None)
@@ -31,13 +32,12 @@ class MetricMeta(IndexMeta):
             app_config = apps.get_containing_app_config(module)
             if app_label is None:
                 if app_config is None:
-                    # TODO: Only raise for non-abstract classes if we decide
-                    # to support abstract Metrics
-                    raise RuntimeError(
-                        "Metric class %s.%s doesn't declare an explicit "
-                        "app_label and isn't in an application in "
-                        "INSTALLED_APPS." % (module, name)
-                    )
+                    if not abstract:
+                        raise RuntimeError(
+                            "Metric class %s.%s doesn't declare an explicit "
+                            "app_label and isn't in an application in "
+                            "INSTALLED_APPS." % (module, name)
+                        )
                 else:
                     app_label = app_config.label
             metric_name = new_cls.__name__.lower()
