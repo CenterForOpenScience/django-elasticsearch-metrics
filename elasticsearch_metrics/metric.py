@@ -78,7 +78,7 @@ class Metric(Document, BaseMetric):
         """
         Create the index and populate the mappings in elasticsearch.
         """
-        return super(Metric, cls).init(index=index or cls.get_index_name())
+        return super(Metric, cls).init(index=index or cls.get_index_name(), using=using)
 
     def save(self, using=None, index=None, validate=True, **kwargs):
         self.timestamp = timezone.now()
