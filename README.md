@@ -44,7 +44,7 @@ A `Metric` is a subclass of [`elasticsearch_dsl.Document`](https://elasticsearch
 ```python
 # myapp/metrics.py
 
-from elasticsearch_metrics import Metric
+from elasticsearch_metrics.metric import Metric
 from elasticsearch_dsl import Integer
 
 class PageView(Metric):
@@ -96,22 +96,51 @@ class PageView(Metric):
         }
 ```
 
-## Overriding the default template name and pattern
+## Index templates
 
+Each `Metric` will have its own [index template](https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-templates.html).
+The index template name and glob pattern are computed from the app label
+for the containing app and the class's name. For example, a `PageView`
+class defined in `myapp/metrics.py` will have an index template with the
+name `myapp_pageview` and a template glob pattern of `myapp_pageview-*`.
+
+If you declare a `Metric` outside of an app, you will need to set
+`app_label`.
+
+
+```python
+class PageView(Metric):
+    class Meta:
+        app_label = "myapp"
+```
+
+Alternatively, you can set `template_name` and/or `template` explicitly.
 
 ```python
 class PageView(Metric):
     user_id = Integer()
 
-    class Index:
-        settings = {
-            "number_of_shards": 2,
-            "refresh_interval": "5s",
-        }
-
     class Meta:
         template_name = "myapp_pviews"
         template = "myapp_pviews-*"
+```
+
+## Abstract metrics
+
+```python
+from elasticsearch_metrics.metric import Metric
+from elasticsearch_dsl import Integer
+
+class MyBaseMetric(Metric):
+    user_id = Integer()
+
+    class Meta:
+        abstract = True
+
+
+class PageView(MyBaseMetric):
+    class Meta:
+        app_label = "myapp"
 ```
 
 

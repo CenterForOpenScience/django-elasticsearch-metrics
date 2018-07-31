@@ -7,13 +7,12 @@ import konch
 import elasticsearch_dsl
 from elasticsearch_dsl import connections, Search
 
-from elasticsearch_metrics import Metric
 
 # Available options:
 #   'context', 'banner', 'shell', 'prompt', 'output',
 #   'context_format', 'ipy_extensions', 'ipy_autoreload',
 #   'ipy_colors', 'ipy_highlighting_style'
-context = {"dsl": elasticsearch_dsl, "Metric": Metric, "Search": Search}
+context = {"dsl": elasticsearch_dsl, "Search": Search}
 konch.config(
     {
         "banner": colorize(
@@ -27,8 +26,10 @@ konch.config(
 
 
 def setup():
-    # Set up django and add the default elasticsearch-py client to the context
+    # Set up django and add the default elasticsearch-py client and Metric to the context
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "tests.settings")
     django.setup()
+    from elasticsearch_metrics.metric import Metric
     context["client"] = connections.get_connection()
+    context["Metric"] = Metric
     konch.config({"context": context})

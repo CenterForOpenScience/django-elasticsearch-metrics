@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.apps import apps
 from django.utils import timezone
 from django.utils.six import add_metaclass
 from elasticsearch_dsl import Document, Date
@@ -10,11 +11,45 @@ class MetricMeta(IndexMeta):
     """Metaclass for the base `Metric` class."""
 
     def __new__(mcls, name, bases, attrs):  # noqa: B902
+
         meta = attrs.get("Meta", None)
+        module = attrs.get("__module__")
+
         new_cls = super(MetricMeta, mcls).__new__(mcls, name, bases, attrs)
-        # TODO: Automatically compute template_name and template instead of defaulting to None
-        new_cls._template_name = getattr(meta, "template_name", None)
-        new_cls._template = getattr(meta, "template", None)
+        parents = [b for b in bases if isinstance(b, MetricMeta)]
+        # Also ensure initialization is only performed for subclasses of Metric
+        # (excluding Metric class itself).
+        if not parents:
+            return new_cls
+
+        template_name = getattr(meta, "template_name", None)
+        template = getattr(meta, "template", None)
+        abstract = getattr(meta, "abstract", False)
+
+        if not template_name or not template:
+            app_label = getattr(meta, "app_label", None)
+            # Look for an application configuration to attach the model to.
+            app_config = apps.get_containing_app_config(module)
+            if app_label is None:
+                if app_config is None:
+                    if not abstract:
+                        raise RuntimeError(
+                            "Metric class %s.%s doesn't declare an explicit "
+                            "app_label and isn't in an application in "
+                            "INSTALLED_APPS." % (module, name)
+                        )
+                else:
+                    app_label = app_config.label
+            metric_name = new_cls.__name__.lower()
+            # If template_name not specified in class Meta,
+            # compute it as <app label>_<lowercased class name>
+            if not template_name:
+                template_name = "{}_{}".format(app_label, metric_name)
+            # template is <app label>_<lowercased class name>-*
+            template = template or "{}_{}-*".format(app_label, metric_name)
+
+        new_cls._template_name = template_name
+        new_cls._template = template
         return new_cls
 
 
