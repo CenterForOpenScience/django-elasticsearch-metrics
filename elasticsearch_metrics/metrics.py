@@ -63,7 +63,7 @@ class BaseMetric(object):
 
     .. code-block:: python
 
-        from elasticsearch_metrics import Metric
+        from elasticsearch_metrics.metrics import Metric
 
         class PageView(Metric):
             user_id = Integer()

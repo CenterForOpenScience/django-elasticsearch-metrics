@@ -1,4 +1,4 @@
-from elasticsearch_metrics.metric import Metric
+from elasticsearch_metrics.metrics import Metric
 
 
 class DummyMetric(Metric):

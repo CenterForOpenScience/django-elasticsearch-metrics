@@ -3,7 +3,7 @@ import pytest
 import datetime as dt
 from django.conf import settings
 from django.utils import timezone
-from elasticsearch_metrics.metric import Metric
+from elasticsearch_metrics.metrics import Metric
 from elasticsearch_dsl import IndexTemplate, connections, Keyword, MetaField
 
 from elasticsearch_metrics.signals import pre_index_template_create

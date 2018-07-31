@@ -44,7 +44,7 @@ A `Metric` is a subclass of [`elasticsearch_dsl.Document`](https://elasticsearch
 ```python
 # myapp/metrics.py
 
-from elasticsearch_metrics.metric import Metric
+from elasticsearch_metrics.metrics import Metric
 from elasticsearch_dsl import Integer
 
 class PageView(Metric):
@@ -128,7 +128,7 @@ class PageView(Metric):
 ## Abstract metrics
 
 ```python
-from elasticsearch_metrics.metric import Metric
+from elasticsearch_metrics.metrics import Metric
 from elasticsearch_dsl import Integer
 
 class MyBaseMetric(Metric):
