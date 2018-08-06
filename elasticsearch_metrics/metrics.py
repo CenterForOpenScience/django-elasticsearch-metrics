@@ -4,7 +4,9 @@ from django.utils import timezone
 from django.utils.six import add_metaclass
 from elasticsearch_dsl import Document, Date
 from elasticsearch_dsl.document import IndexMeta, MetaField
+
 from elasticsearch_metrics.signals import pre_index_template_create, pre_save, post_save
+from elasticsearch_metrics.registry import registry
 
 
 class MetricMeta(IndexMeta):
@@ -26,20 +28,21 @@ class MetricMeta(IndexMeta):
         template = getattr(meta, "template", None)
         abstract = getattr(meta, "abstract", False)
 
+        app_label = getattr(meta, "app_label", None)
+        # Look for an application configuration to attach the model to.
+        app_config = apps.get_containing_app_config(module)
+        if app_label is None:
+            if app_config is None:
+                if not abstract:
+                    raise RuntimeError(
+                        "Metric class %s.%s doesn't declare an explicit "
+                        "app_label and isn't in an application in "
+                        "INSTALLED_APPS." % (module, name)
+                    )
+            else:
+                app_label = app_config.label
+
         if not template_name or not template:
-            app_label = getattr(meta, "app_label", None)
-            # Look for an application configuration to attach the model to.
-            app_config = apps.get_containing_app_config(module)
-            if app_label is None:
-                if app_config is None:
-                    if not abstract:
-                        raise RuntimeError(
-                            "Metric class %s.%s doesn't declare an explicit "
-                            "app_label and isn't in an application in "
-                            "INSTALLED_APPS." % (module, name)
-                        )
-                else:
-                    app_label = app_config.label
             metric_name = new_cls.__name__.lower()
             # If template_name not specified in class Meta,
             # compute it as <app label>_<lowercased class name>
@@ -50,6 +53,7 @@ class MetricMeta(IndexMeta):
 
         new_cls._template_name = template_name
         new_cls._template = template
+        registry.register(app_label, new_cls)
         return new_cls
 
 

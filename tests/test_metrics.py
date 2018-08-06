@@ -28,6 +28,7 @@ class PreprintView(Metric):
         settings = {"refresh_interval": "-1"}
 
     class Meta:
+        app_label = "dummyapp"
         template_name = "osf_metrics_preprintviews"
         template = "osf_metrics_preprintviews-*"
 
@@ -217,6 +218,7 @@ class TestIntegration:
     def test_source_may_be_enabled(self, client):
         class MyMetric(Metric):
             class Meta:
+                app_label = "dummyapp"
                 template_name = "mymetric"
                 template = "mymetric-*"
                 source = MetaField(enabled=True)
