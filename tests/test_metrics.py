@@ -6,7 +6,7 @@ from django.utils import timezone
 from elasticsearch_metrics.metrics import Metric
 from elasticsearch_dsl import IndexTemplate, connections, Keyword, MetaField
 
-from elasticsearch_metrics.signals import pre_index_template_create
+from elasticsearch_metrics.signals import pre_index_template_create, pre_save, post_save
 from tests.dummyapp.metrics import (
     DummyMetric,
     DummyMetricWithExplicitTemplateName,
@@ -179,7 +179,38 @@ class TestIntegration:
         pre_index_template_create.connect(mock_listener)
         PreprintView.create_index_template()
         assert mock_listener.call_count == 1
-        assert "index_template" in mock_listener.call_args[1]
+        call_kwargs = mock_listener.call_args[1]
+        assert "index_template" in call_kwargs
+        assert "using" in call_kwargs
+
+    @pytest.mark.es
+    def test_save_sends_signals(self):
+        mock_pre_save_listener = mock.Mock()
+        mock_post_save_listener = mock.Mock()
+        pre_save.connect(mock_pre_save_listener, sender=PreprintView)
+        post_save.connect(mock_post_save_listener, sender=PreprintView)
+
+        provider_id = "12345"
+        user_id = "abcde"
+        preprint_id = "zyxwv"
+        doc = PreprintView(
+            provider_id=provider_id, user_id=user_id, preprint_id=preprint_id
+        )
+        doc.save()
+
+        assert mock_pre_save_listener.call_count == 1
+        pre_save_kwargs = mock_pre_save_listener.call_args[1]
+        assert isinstance(pre_save_kwargs["instance"], PreprintView)
+        assert "index" in pre_save_kwargs
+        assert "using" in pre_save_kwargs
+        assert pre_save_kwargs["sender"] is PreprintView
+
+        assert mock_post_save_listener.call_count == 1
+        post_save_kwargs = mock_pre_save_listener.call_args[1]
+        assert isinstance(post_save_kwargs["instance"], PreprintView)
+        assert "index" in post_save_kwargs
+        assert "using" in post_save_kwargs
+        assert post_save_kwargs["sender"] is PreprintView
 
     # TODO: Can we make this test not use ES?
     @pytest.mark.es

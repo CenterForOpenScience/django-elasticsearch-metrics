@@ -171,9 +171,12 @@ python manage.py clean_metrics myapp.PageView --older-than 45 --time-unit days
 
 Signals are located in the `elasticsearch_metrics.signals` module.
 
-* `pre_index_template_create(Metric, index_template)`: Sent before `PUT`ting a new index
+* `pre_index_template_create(Metric, index_template, using)`: Sent before `PUT`ting a new index
     template into Elasticsearch.
-
+* `pre_save(Metric, instance, using, index)`: Sent at the beginning of a
+    Metric's `save()` method.
+* `post_save(Metric, instance, using, index)`: Sent at the end of a
+    Metric's `save()` method.
 
 ## Caveats
 
