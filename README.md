@@ -19,17 +19,13 @@ Django app for storing time-series metrics in Elasticsearch.
 Add `"elasticseach_metrics"` to `INSTALLED_APPS`.
 
 ```python
-INSTALLED_APPS += [
-    "elasticsearch_metrics",
-]
+INSTALLED_APPS += ["elasticsearch_metrics"]
 ```
 
 Define the `ELASTICSEARCH_DSL` setting.
 
 ```python
-ELASTICSEARCH_DSL = {
-    "default": {"hosts": "localhost:9200"}
-}
+ELASTICSEARCH_DSL = {"default": {"hosts": "localhost:9200"}}
 ```
 
 This setting is passed to [`elasticsearch_dsl.connections.configure`](http://elasticsearch-dsl.readthedocs.io/en/stable/configuration.html#multiple-clusters) so
@@ -46,6 +42,7 @@ A `Metric` is a subclass of [`elasticsearch_dsl.Document`](https://elasticsearch
 
 from elasticsearch_metrics.metrics import Metric
 from elasticsearch_dsl import Integer
+
 
 class PageView(Metric):
     user_id = Integer()
@@ -90,10 +87,7 @@ class PageView(Metric):
     user_id = Integer()
 
     class Index:
-        settings = {
-            "number_of_shards": 2,
-            "refresh_interval": "5s",
-        }
+        settings = {"number_of_shards": 2, "refresh_interval": "5s"}
 ```
 
 ## Index templates
@@ -130,6 +124,7 @@ class PageView(Metric):
 ```python
 from elasticsearch_metrics.metrics import Metric
 from elasticsearch_dsl import Integer
+
 
 class MyBaseMetric(Metric):
     user_id = Integer()
