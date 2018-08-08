@@ -2,17 +2,26 @@
 # vi: set ft=python :
 import os
 import django
+
 from django.utils.termcolors import colorize
+from django.apps import apps
 import konch
 import elasticsearch_dsl
 from elasticsearch_dsl import connections, Search
+
+from elasticsearch_metrics.registry import registry
 
 
 # Available options:
 #   'context', 'banner', 'shell', 'prompt', 'output',
 #   'context_format', 'ipy_extensions', 'ipy_autoreload',
 #   'ipy_colors', 'ipy_highlighting_style'
-context = {"dsl": elasticsearch_dsl, "Search": Search}
+context = {
+    "dsl": elasticsearch_dsl,
+    "Search": Search,
+    "registry": registry,
+    "apps": apps,
+}
 konch.config(
     {
         "banner": colorize(
@@ -30,6 +39,7 @@ def setup():
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "tests.settings")
     django.setup()
     from elasticsearch_metrics.metrics import Metric
+
     context["client"] = connections.get_connection()
     context["Metric"] = Metric
     konch.config({"context": context})
