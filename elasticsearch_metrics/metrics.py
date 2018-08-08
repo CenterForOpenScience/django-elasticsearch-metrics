@@ -18,10 +18,11 @@ class MetricMeta(IndexMeta):
         module = attrs.get("__module__")
 
         new_cls = super(MetricMeta, mcls).__new__(mcls, name, bases, attrs)
-        parents = [b for b in bases if isinstance(b, MetricMeta)]
         # Also ensure initialization is only performed for subclasses of Metric
         # (excluding Metric class itself).
-        if not parents:
+        if not any(
+            b for b in bases if isinstance(b, MetricMeta) and b is not BaseMetric
+        ):
             return new_cls
 
         template_name = getattr(meta, "template_name", None)

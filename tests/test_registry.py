@@ -66,5 +66,6 @@ def test_get_metrics_excludes_abstract_metrics():
         class Meta:
             app_label = "anotherapp"
 
+    assert Metric not in registry.get_metrics()
     assert AbstractMetric not in registry.get_metrics()
     assert ConcreteMetric in registry.get_metrics()
