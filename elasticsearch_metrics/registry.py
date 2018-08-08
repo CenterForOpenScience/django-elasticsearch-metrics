@@ -45,11 +45,7 @@ class Registry(object):
         if metric_name is None:
             app_label, metric_name = app_label.split(".")
 
-        if app_label not in self.all_metrics:
-            raise LookupError(
-                "No metrics found in app with label '{}'.".format(app_label)
-            )
-        app_metrics = self.all_metrics[app_label]
+        app_metrics = self._get_metrics_for_app(app_label=app_label)
         try:
             return app_metrics[metric_name.lower()]
         except KeyError:
@@ -59,21 +55,22 @@ class Registry(object):
 
     def get_metrics(self, app_label=None):
         """Return list of registered metric classes, optionally filtered on an app_label."""
-        if app_label:
-            if app_label not in self.all_metrics:
-                raise LookupError(
-                    "No metrics found in app with label '{}'.".format(app_label)
-                )
-            app_labels = [app_label]
-        else:
-            app_labels = self.all_metrics.keys()
+        app_labels = [app_label] if app_label else self.all_metrics.keys()
         result = []
         for app_label in app_labels:
-            result.extend(list(self.all_metrics[app_label].values()))
+            app_metrics = self._get_metrics_for_app(app_label=app_label)
+            result.extend(list(app_metrics.values()))
         return result
 
     def check_apps_ready(self):
         return apps.check_apps_ready()
+
+    def _get_metrics_for_app(self, app_label):
+        if app_label not in self.all_metrics:
+            raise LookupError(
+                "No metrics found in app with label '{}'.".format(app_label)
+            )
+        return self.all_metrics[app_label]
 
 
 registry = Registry()

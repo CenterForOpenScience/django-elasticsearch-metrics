@@ -15,7 +15,7 @@ def test_metric_in_app_is_in_registry():
     assert registry.all_metrics["dummyapp"]["dummymetric"] is DummyMetric
 
 
-def test_metric_with_explicit_label_set_is_in_regisry():
+def test_metric_with_explicit_label_set_is_in_registry():
     assert registry.all_metrics["dummyapp"]["metricwithapplabel"] is MetricWithAppLabel
 
 
@@ -48,8 +48,23 @@ def test_get_metrics():
             app_label = "anotherapp"
 
     assert DummyMetric in registry.get_metrics()
+    assert AnotherMetric in registry.get_metrics()
     assert DummyMetric in registry.get_metrics(app_label="dummyapp")
     assert AnotherMetric not in registry.get_metrics(app_label="dummyapp")
 
-    with pytest.raises(LookupError):
+    with pytest.raises(LookupError) as excinfo:
         registry.get_metrics("notanapp")
+    assert "No metrics found in app with label 'notanapp'." in excinfo.value.args[0]
+
+
+def test_get_metrics_excludes_abstract_metrics():
+    class AbstractMetric(Metric):
+        class Meta:
+            abstract = True
+
+    class ConcreteMetric(AbstractMetric):
+        class Meta:
+            app_label = "anotherapp"
+
+    assert AbstractMetric not in registry.get_metrics()
+    assert ConcreteMetric in registry.get_metrics()

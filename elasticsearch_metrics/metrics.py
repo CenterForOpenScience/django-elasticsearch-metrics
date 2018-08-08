@@ -53,7 +53,10 @@ class MetricMeta(IndexMeta):
 
         new_cls._template_name = template_name
         new_cls._template = template
-        registry.register(app_label, new_cls)
+        # Abstract base metrics can't be instantiated and don't appear in
+        # the list of metrics for an app.
+        if not abstract:
+            registry.register(app_label, new_cls)
         return new_cls
 
 
