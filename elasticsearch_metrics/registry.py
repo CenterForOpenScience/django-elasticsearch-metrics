@@ -40,7 +40,7 @@ class Registry(object):
         metric exists with this name in the application. Raise ValueError if
         called with a single argument that doesn't contain exactly one dot.
         """
-        self.check_apps_ready()
+        apps.check_apps_ready()
 
         if metric_name is None:
             app_label, metric_name = app_label.split(".")
@@ -55,15 +55,14 @@ class Registry(object):
 
     def get_metrics(self, app_label=None):
         """Return list of registered metric classes, optionally filtered on an app_label."""
+        apps.check_apps_ready()
+
         app_labels = [app_label] if app_label else self.all_metrics.keys()
         result = []
         for app_label in app_labels:
             app_metrics = self._get_metrics_for_app(app_label=app_label)
             result.extend(list(app_metrics.values()))
         return result
-
-    def check_apps_ready(self):
-        return apps.check_apps_ready()
 
     def _get_metrics_for_app(self, app_label):
         if app_label not in self.all_metrics:
