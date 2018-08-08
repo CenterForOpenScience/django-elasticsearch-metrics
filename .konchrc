@@ -28,7 +28,6 @@ konch.config(
             "Welcome to the django-elasticsearch-metrics shell. Happy hacking!",
             opts=("bold",),
         ),
-        "ipy_autoreload": True,
         "ipy_colors": "linux",
     }
 )
