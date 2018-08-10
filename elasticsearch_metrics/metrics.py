@@ -65,10 +65,6 @@ class MetricMeta(IndexMeta):
 # we can run MetricMeta ahead of IndexMeta
 @add_metaclass(MetricMeta)
 class BaseMetric(object):
-    pass
-
-
-class Metric(Document, BaseMetric):
     """Base metric class with which to define custom metric classes.
 
     Example usage:
@@ -115,6 +111,10 @@ class Metric(Document, BaseMetric):
         dateformat = settings.DATE_FORMAT
         date_formatted = date.strftime(dateformat)
         return "{}-{}".format(cls._template_name, date_formatted)
+
+
+class Metric(Document, BaseMetric):
+    __doc__ = BaseMetric.__doc__
 
     @classmethod
     def init(cls, index=None, using=None):
