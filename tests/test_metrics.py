@@ -4,7 +4,7 @@ import datetime as dt
 from django.conf import settings
 from django.utils import timezone
 from elasticsearch_metrics.metrics import Metric
-from elasticsearch_dsl import IndexTemplate, connections, Keyword, MetaField
+from elasticsearch_dsl import IndexTemplate, Keyword, MetaField
 
 from elasticsearch_metrics.signals import pre_index_template_create, pre_save, post_save
 from tests.dummyapp.metrics import (
@@ -12,11 +12,6 @@ from tests.dummyapp.metrics import (
     DummyMetricWithExplicitTemplateName,
     DummyMetricWithExplicitTemplatePattern,
 )
-
-
-@pytest.fixture()
-def client():
-    return connections.get_connection()
 
 
 class PreprintView(Metric):
@@ -123,18 +118,8 @@ class TestGetIndexTemplate:
         assert template._template_name == "dummyapp_concretemetric"
 
 
+# TODO: Move these tests to their own module?
 class TestIntegration:
-    @classmethod
-    def setup_class(cls):
-        # TODO hook into pytest.mark.es to delete indices
-        client().indices.delete(index="*")
-        client().indices.delete_template("*")
-
-    @classmethod
-    def teardown_class(cls):
-        client().indices.delete(index="*")
-        client().indices.delete_template("*")
-
     @pytest.mark.es
     def test_init(self, client):
         PreprintView.init()
