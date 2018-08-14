@@ -25,3 +25,19 @@ def _es_marker(request, client):
         teardown_es()
     else:
         yield
+
+
+@pytest.fixture()
+def run_mgmt_command(capsys):
+    """Function fixture that runs a python manage.py with arguments
+    and returns the stdout and stderr as a tuple.
+    """
+
+    def f(cmd_class, argv=None):
+        argv = argv or []
+        cmd = cmd_class()
+        cmd.run_from_argv(["manage.py"] + argv)
+        out, err = capsys.readouterr()
+        return out, err
+
+    return f
