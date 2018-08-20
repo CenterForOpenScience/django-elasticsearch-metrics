@@ -1,7 +1,8 @@
 import pytest
 import mock
+
 from elasticsearch_metrics.management.commands.sync_metrics import Command
-from elasticsearch_metrics.metrics import Metric
+from elasticsearch_metrics import metrics
 from elasticsearch_metrics.registry import registry
 
 
@@ -25,7 +26,7 @@ def test_with_invalid_app(capsys, run_mgmt_command, mock_create_index_template):
 
 
 def test_with_app_label(run_mgmt_command, mock_create_index_template):
-    class DummyMetric2(Metric):
+    class DummyMetric2(metrics.Metric):
         class Meta:
             app_label = "dummyapp2"
 
