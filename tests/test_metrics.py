@@ -2,8 +2,8 @@ import mock
 import pytest
 import datetime as dt
 from django.utils import timezone
-from elasticsearch_metrics.metrics import Metric
-from elasticsearch_dsl import IndexTemplate, Keyword, MetaField
+from elasticsearch_metrics import metrics
+from elasticsearch_dsl import IndexTemplate
 
 from elasticsearch_metrics.signals import pre_index_template_create, pre_save, post_save
 from tests.dummyapp.metrics import (
@@ -13,10 +13,10 @@ from tests.dummyapp.metrics import (
 )
 
 
-class PreprintView(Metric):
-    provider_id = Keyword(index=True)
-    user_id = Keyword(index=True)
-    preprint_id = Keyword(index=True)
+class PreprintView(metrics.Metric):
+    provider_id = metrics.Keyword(index=True)
+    user_id = metrics.Keyword(index=True)
+    preprint_id = metrics.Keyword(index=True)
 
     class Index:
         settings = {"refresh_interval": "-1"}
@@ -65,12 +65,12 @@ class TestGetIndexTemplate:
     def test_declaring_metric_with_no_app_label_or_template_name_errors(self):
         with pytest.raises(RuntimeError):
 
-            class BadMetric(Metric):
+            class BadMetric(metrics.Metric):
                 pass
 
         with pytest.raises(RuntimeError):
 
-            class MyMetric(Metric):
+            class MyMetric(metrics.Metric):
                 class Meta:
                     template_name = "osf_metrics_preprintviews"
 
@@ -81,7 +81,7 @@ class TestGetIndexTemplate:
         assert "dummyapp_dummymetric-*" in template.to_dict()["index_patterns"]
 
     def test_get_index_template_uses_app_label_in_class_meta(self):
-        class MyMetric(Metric):
+        class MyMetric(metrics.Metric):
             class Meta:
                 app_label = "myapp"
 
@@ -110,8 +110,8 @@ class TestGetIndexTemplate:
         assert "dummymetric-*" in template.to_dict()["index_patterns"]
 
     def test_inheritance(self):
-        class MyBaseMetric(Metric):
-            user_id = Keyword(index=True)
+        class MyBaseMetric(metrics.Metric):
+            user_id = metrics.Keyword(index=True)
 
             class Meta:
                 abstract = True
@@ -207,12 +207,12 @@ class TestIntegration:
     # TODO: Can we make this test not use ES?
     @pytest.mark.es
     def test_source_may_be_enabled(self, client):
-        class MyMetric(Metric):
+        class MyMetric(metrics.Metric):
             class Meta:
                 app_label = "dummyapp"
                 template_name = "mymetric"
                 template = "mymetric-*"
-                source = MetaField(enabled=True)
+                source = metrics.MetaField(enabled=True)
 
         MyMetric.create_index_template()
         template_name = MyMetric._template_name

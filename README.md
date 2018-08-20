@@ -40,12 +40,11 @@ A `Metric` is a subclass of [`elasticsearch_dsl.Document`](https://elasticsearch
 ```python
 # myapp/metrics.py
 
-from elasticsearch_metrics.metrics import Metric
-from elasticsearch_dsl import Integer
+from elasticsearch_metrics import metrics
 
 
-class PageView(Metric):
-    user_id = Integer()
+class PageView(metrics.Metric):
+    user_id = metrics.Integer()
 ```
 
 Use the `sync_metrics` management command to ensure that the [index template](https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-templates.html)
@@ -83,8 +82,8 @@ You can configure the index template settings by setting
 `Metric.Index.settings`.
 
 ```python
-class PageView(Metric):
-    user_id = Integer()
+class PageView(metrics.Metric):
+    user_id = metrics.Integer()
 
     class Index:
         settings = {"number_of_shards": 2, "refresh_interval": "5s"}
@@ -103,7 +102,7 @@ If you declare a `Metric` outside of an app, you will need to set
 
 
 ```python
-class PageView(Metric):
+class PageView(metrics.Metric):
     class Meta:
         app_label = "myapp"
 ```
@@ -111,8 +110,8 @@ class PageView(Metric):
 Alternatively, you can set `template_name` and/or `template` explicitly.
 
 ```python
-class PageView(Metric):
-    user_id = Integer()
+class PageView(metrics.Metric):
+    user_id = metrics.Integer()
 
     class Meta:
         template_name = "myapp_pviews"
@@ -122,12 +121,11 @@ class PageView(Metric):
 ## Abstract metrics
 
 ```python
-from elasticsearch_metrics.metrics import Metric
-from elasticsearch_dsl import Integer
+from elasticsearch_metrics import metrics
 
 
-class MyBaseMetric(Metric):
-    user_id = Integer()
+class MyBaseMetric(metrics.Metric):
+    user_id = metrics.Integer()
 
     class Meta:
         abstract = True
@@ -188,9 +186,9 @@ Signals are located in the `elasticsearch_metrics.signals` module.
     To enable `_source`, you can override it in `class Meta`.
 
 ```python
-class MyMetric(Metric):
+class MyMetric(metrics.Metric):
     class Meta:
-        source = MetaField(enabled=True)
+        source = metrics.MetaField(enabled=True)
 ```
 
 ## License

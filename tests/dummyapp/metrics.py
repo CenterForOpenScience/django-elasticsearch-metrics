@@ -1,15 +1,15 @@
-from elasticsearch_metrics.metrics import Metric
+from elasticsearch_metrics import metrics
 
 
-class DummyMetric(Metric):
+class DummyMetric(metrics.Metric):
     pass
 
 
-class DummyMetricWithExplicitTemplateName(Metric):
+class DummyMetricWithExplicitTemplateName(metrics.Metric):
     class Meta:
         template_name = "dummymetric"
 
 
-class DummyMetricWithExplicitTemplatePattern(Metric):
+class DummyMetricWithExplicitTemplatePattern(metrics.Metric):
     class Meta:
         template = "dummymetric-*"

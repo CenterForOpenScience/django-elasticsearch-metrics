@@ -2,11 +2,15 @@ from django.apps import apps
 from django.conf import settings
 from django.utils import timezone
 from django.utils.six import add_metaclass
-from elasticsearch_dsl import Document, Date
+from elasticsearch_dsl import Document
 from elasticsearch_dsl.document import IndexMeta, MetaField
 
 from elasticsearch_metrics.signals import pre_index_template_create, pre_save, post_save
 from elasticsearch_metrics.registry import registry
+
+# Fields should be imported from this module
+from elasticsearch_metrics.field import *  # noqa: F40
+from elasticsearch_metrics.field import Date
 
 DEFAULT_DATE_FORMAT = "%Y.%m.%d"
 
@@ -73,10 +77,10 @@ class BaseMetric(object):
 
     .. code-block:: python
 
-        from elasticsearch_metrics.metrics import Metric
+        from elasticsearch_metrics import metrics
 
-        class PageView(Metric):
-            user_id = Integer()
+        class PageView(metrics.Metric):
+            user_id = metrics.Integer()
 
             class Index:
                 settings = {

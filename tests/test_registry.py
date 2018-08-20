@@ -1,11 +1,11 @@
 import pytest
 
-from elasticsearch_metrics.metrics import Metric
+from elasticsearch_metrics import metrics
 from elasticsearch_metrics.registry import registry
 from tests.dummyapp.metrics import DummyMetric
 
 
-class MetricWithAppLabel(Metric):
+class MetricWithAppLabel(metrics.Metric):
     class Meta:
         app_label = "dummyapp"
 
@@ -22,7 +22,7 @@ def test_metric_with_explicit_label_set_is_in_registry():
 def test_conflicting_metric():
     with pytest.raises(RuntimeError):
 
-        class DummyMetric(Metric):
+        class DummyMetric(metrics.Metric):
             class Meta:
                 app_label = "dummyapp"
 
@@ -43,7 +43,7 @@ def test_get_metric():
 
 
 def test_get_metrics():
-    class AnotherMetric(Metric):
+    class AnotherMetric(metrics.Metric):
         class Meta:
             app_label = "anotherapp"
 
@@ -58,7 +58,7 @@ def test_get_metrics():
 
 
 def test_get_metrics_excludes_abstract_metrics():
-    class AbstractMetric(Metric):
+    class AbstractMetric(metrics.Metric):
         class Meta:
             abstract = True
 
@@ -66,6 +66,6 @@ def test_get_metrics_excludes_abstract_metrics():
         class Meta:
             app_label = "anotherapp"
 
-    assert Metric not in registry.get_metrics()
+    assert metrics.Metric not in registry.get_metrics()
     assert AbstractMetric not in registry.get_metrics()
     assert ConcreteMetric in registry.get_metrics()
