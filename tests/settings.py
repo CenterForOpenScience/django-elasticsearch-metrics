@@ -10,4 +10,3 @@ TIME_ZONE = "UTC"
 ELASTICSEARCH_DSL = {
     "default": {"hosts": os.environ.get("ELASTICSEARCH_HOST", "localhost:9201")}
 }
-DATE_FORMAT = "%Y.%m.%d"

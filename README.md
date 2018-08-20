@@ -143,8 +143,8 @@ class PageView(MyBaseMetric):
 
 * `ELASTICSEARCH_DSL`: Required. Connection settings passed to
   [`elasticsearch_dsl.connections.configure`](http://elasticsearch-dsl.readthedocs.io/en/stable/configuration.html#multiple-clusters).
-* `ELASTICSEARCH_METRICS_DATEFORMAT`: Dateformat to use when creating
-    indexes. Default: `%Y.%m.%d` (same dateformat Elasticsearch uses for
+* `ELASTICSEARCH_METRICS_DATE_FORMAT`: Date format to use when creating
+    indexes. Default: `%Y.%m.%d` (same date format Elasticsearch uses for
     [date math](https://www.elastic.co/guide/en/elasticsearch/reference/current/date-math-index-names.html))
 
 ## Management commands
@@ -159,7 +159,7 @@ python manage.py sync_metrics
 * `clean_metrics` : Clean old data using [curator](https://curator.readthedocs.io/en/latest/).
 
 ```
-python manage.py clean_metrics myapp.PageView --older-than 45 --time-unit days 
+python manage.py clean_metrics myapp.PageView --older-than 45 --time-unit days
 ```
 
 ## Signals
