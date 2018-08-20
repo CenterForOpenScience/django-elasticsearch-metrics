@@ -5,15 +5,10 @@ from elasticsearch_metrics.management.color import color_style
 
 
 class Command(BaseCommand):
-    help = "Ensures index templates exist for all Metric classes."
+    help = "Pretty-print a listing of all registered metrics."
 
     def add_arguments(self, parser):
-        parser.add_argument(
-            "app_label",
-            nargs="?",
-            help="App label of an application to synchronize the state.",
-        )
-        # TODO: "using"
+        parser.add_argument("app_label", nargs="?", help="App label of an application.")
 
     def handle(self, *args, **options):
         style = color_style()
@@ -27,18 +22,11 @@ class Command(BaseCommand):
             app_labels = registry.all_metrics.keys()
         for app_label in app_labels:
             self.stdout.write(
-                "Syncing metrics for app '{}'".format(app_label), style.MIGRATE_HEADING
+                "Metrics for '{}':".format(app_label), style.MIGRATE_HEADING
             )
             metrics = registry.get_metrics(app_label=app_label)
             for metric in metrics:
-                metric_name = style.METRIC(metric.__name__)
-                template_name = metric._template_name
-                template = style.ES_TEMPLATE(metric._template)
-                self.stdout.write(
-                    "  Syncing {metric_name} -> {template_name} ({template})".format(
-                        **locals()
-                    )
+                line = "\t".join(
+                    [style.METRIC(metric.__name__), style.ES_TEMPLATE(metric._template)]
                 )
-                metric.create_index_template()
-
-        self.stdout.write("Synchronized metrics.", style.SUCCESS)
+                self.stdout.write("\t{}".format(line))
