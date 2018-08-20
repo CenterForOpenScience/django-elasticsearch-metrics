@@ -3,6 +3,7 @@
 import os
 import django
 
+from django.conf import settings
 from django.utils.termcolors import colorize
 from django.apps import apps
 import konch
@@ -21,6 +22,7 @@ context = {
     "Search": Search,
     "registry": registry,
     "apps": apps,
+    "settings": settings,
 }
 konch.config(
     {
