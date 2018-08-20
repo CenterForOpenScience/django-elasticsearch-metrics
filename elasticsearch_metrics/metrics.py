@@ -1,5 +1,5 @@
-from django.conf import settings
 from django.apps import apps
+from django.conf import settings
 from django.utils import timezone
 from django.utils.six import add_metaclass
 from elasticsearch_dsl import Document, Date
@@ -7,6 +7,8 @@ from elasticsearch_dsl.document import IndexMeta, MetaField
 
 from elasticsearch_metrics.signals import pre_index_template_create, pre_save, post_save
 from elasticsearch_metrics.registry import registry
+
+DEFAULT_DATE_FORMAT = "%Y.%m.%d"
 
 
 class MetricMeta(IndexMeta):
@@ -108,7 +110,9 @@ class BaseMetric(object):
     @classmethod
     def get_index_name(cls, date=None):
         date = date or timezone.now().date()
-        dateformat = settings.DATE_FORMAT
+        dateformat = getattr(
+            settings, "ELASTICSEARCH_METRICS_DATE_FORMAT", DEFAULT_DATE_FORMAT
+        )
         date_formatted = date.strftime(dateformat)
         return "{}-{}".format(cls._template_name, date_formatted)
 
