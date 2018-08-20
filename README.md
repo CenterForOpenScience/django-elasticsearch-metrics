@@ -156,6 +156,12 @@ class PageView(MyBaseMetric):
 python manage.py sync_metrics
 ```
 
+* `show_metrics`: Pretty-print a listing of all registered metrics.
+
+```
+python manage.py show_metrics
+```
+
 * `clean_metrics` : Clean old data using [curator](https://curator.readthedocs.io/en/latest/).
 
 ```

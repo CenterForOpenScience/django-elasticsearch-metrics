@@ -11,6 +11,7 @@ import elasticsearch_dsl
 from elasticsearch_dsl import connections, Search
 
 from elasticsearch_metrics.registry import registry
+from elasticsearch_metrics.management.color import color_style
 
 
 # Available options:
@@ -23,6 +24,7 @@ context = {
     "registry": registry,
     "apps": apps,
     "settings": settings,
+    "style": color_style(),
 }
 konch.config(
     {
