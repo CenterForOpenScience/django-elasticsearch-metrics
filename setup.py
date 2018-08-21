@@ -36,7 +36,7 @@ setup(
     description="Django app for storing time-series metrics in Elasticsearch.",
     long_description=read("README.md"),
     long_description_content_type="text/markdown",
-    url="http://github.com/CenterForOpenScience/django-elasticsearch-metrics",
+    url="http://github.com/sloria/django-elasticsearch-metrics",
     license="MIT",
     packages=["elasticsearch_metrics"],
     keywords=(
