@@ -6,8 +6,6 @@
 
 Django app for storing time-series metrics in Elasticsearch.
 
-**[Work in progress]** Below is a sci-fi API. This isn't working yet!
-
 ## Pre-requisites
 
 * Python 2.7 or >=3.6
@@ -74,6 +72,23 @@ Go forth and search!
 ```python
 # perform a search across all page views
 PageView.search()
+```
+
+## Per-month or per-year indices
+
+By default, an index is created for every day that a metric is saved.
+You can change this to create an index per month or per year by changing
+the `ELASTICSEARCH_METRICS_DATE_FORMAT` setting.
+
+
+```python
+# settings.py
+
+# Monthly:
+ELASTICSEARCH_METRICS_DATE_FORMAT = "%Y.%m"
+
+# Yearly:
+ELASTICSEARCH_METRICS_DATE_FORMAT = "%Y"
 ```
 
 ## Index settings
@@ -147,7 +162,7 @@ class PageView(MyBaseMetric):
 
 ## Management commands
 
-* `sync_metrics`: Ensure that all index templates have been created for
+* `sync_metrics`: Ensure that index templates have been created for
     your metrics.
 
 ```
@@ -160,11 +175,11 @@ python manage.py sync_metrics
 python manage.py show_metrics
 ```
 
-* `clean_metrics` : Clean old data using [curator](https://curator.readthedocs.io/en/latest/).
-
-```
-python manage.py clean_metrics myapp.PageView --older-than 45 --time-unit days
-```
+<!-- * `clean_metrics` : Clean old data using [curator](https://curator.readthedocs.io/en/latest/). -->
+<!--  -->
+<!-- ``` -->
+<!-- python manage.py clean_metrics myapp.PageView --older-than 45 --time-unit days -->
+<!-- ``` -->
 
 ## Signals
 
@@ -190,6 +205,12 @@ class MyMetric(metrics.Metric):
     class Meta:
         source = metrics.MetaField(enabled=True)
 ```
+
+## Resources
+
+* [Elasticsearch as a Time Series Data Store](https://www.elastic.co/blog/elasticsearch-as-a-time-series-data-store)
+* [Pythonic Analytics with Elasticsearch](https://www.elastic.co/blog/pythonic-analytics-with-elasticsearch)
+* [In Search of Agile Time Series Database](https://taowen.gitbooks.io/tsdb/content/index.html)
 
 ## License
 
