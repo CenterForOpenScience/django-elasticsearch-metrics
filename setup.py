@@ -67,4 +67,8 @@ setup(
     ],
     zip_safe=False,
     include_package_data=True,
+    project_urls={
+        "Issues": "https://github.com/sloria/django-elasticsearch-metrics/issues",
+        "Changelog": "https://github.com/sloria/django-elasticsearch-metrics/blob/master/CHANGELOG.md",
+    },
 )
