@@ -62,6 +62,18 @@ class TestGetIndexTemplate:
         template = PreprintView.get_index_template()
         assert template._index.to_dict()["settings"] == {"refresh_interval": "-1"}
 
+    def test_get_index_template_creates_template_with_mapping(self):
+        template = PreprintView.get_index_template()
+        mappings = template.to_dict()["mappings"]
+        assert mappings["doc"]["_all"]["enabled"] is False
+        assert mappings["doc"]["_source"]["enabled"] is False
+        properties = mappings["doc"]["properties"]
+        assert "timestamp" in properties
+        assert properties["timestamp"] == {"doc_values": True, "type": "date"}
+        assert properties["provider_id"] == {"type": "keyword", "index": True}
+        assert properties["user_id"] == {"type": "keyword", "index": True}
+        assert properties["preprint_id"] == {"type": "keyword", "index": True}
+
     def test_declaring_metric_with_no_app_label_or_template_name_errors(self):
         with pytest.raises(RuntimeError):
 
@@ -123,50 +135,27 @@ class TestGetIndexTemplate:
         template = ConcreteMetric.get_index_template()
         assert template._template_name == "dummyapp_concretemetric"
 
+    def test_source_may_be_enabled(self):
+        class MyMetric(metrics.Metric):
+            class Meta:
+                app_label = "dummyapp"
+                template_name = "mymetric"
+                template = "mymetric-*"
+                source = metrics.MetaField(enabled=True)
 
-# TODO: Move these tests to their own module?
-class TestIntegration:
-    @pytest.mark.es
-    def test_init(self, client):
-        PreprintView.init()
-        name = PreprintView.get_index_name()
-        mapping = client.indices.get_mapping(index=name)
-        properties = mapping[name]["mappings"]["doc"]["properties"]
-        assert properties["timestamp"] == {"type": "date"}
-        assert properties["provider_id"] == {"type": "keyword"}
-        assert properties["user_id"] == {"type": "keyword"}
-        assert properties["preprint_id"] == {"type": "keyword"}
+        template = MyMetric.get_index_template()
 
-    @pytest.mark.es
-    def test_create_document(self, client):
-        provider_id = "12345"
-        user_id = "abcde"
-        preprint_id = "zyxwv"
-        doc = PreprintView(
-            provider_id=provider_id, user_id=user_id, preprint_id=preprint_id
-        )
-        doc.save()
-        document = PreprintView.get(id=doc.meta.id, index=PreprintView.get_index_name())
-        # TODO flesh out this test more.  Try to query ES?
-        assert document is not None
+        template_dict = template.to_dict()
+        doc = template_dict["mappings"]["doc"]
+        assert doc["_all"]["enabled"] is False
+        assert doc["_source"]["enabled"] is True
 
-    @pytest.mark.es
-    def test_create_metric_creates_template_with_mapping(self, client):
-        PreprintView.create_index_template()
-        template_name = PreprintView._template_name
-        template = client.indices.get_template(name=template_name)
-        mappings = template[template_name]["mappings"]
-        assert mappings["doc"]["_all"]["enabled"] is False
-        assert mappings["doc"]["_source"]["enabled"] is False
-        properties = mappings["doc"]["properties"]
-        assert "timestamp" in properties
-        assert properties["timestamp"] == {"doc_values": True, "type": "date"}
-        assert properties["provider_id"] == {"type": "keyword", "index": True}
-        assert properties["user_id"] == {"type": "keyword", "index": True}
-        assert properties["preprint_id"] == {"type": "keyword", "index": True}
 
-    @pytest.mark.es
-    def test_create_metric_sends_pre_index_template_create_signal(self):
+class TestSignals:
+    @mock.patch.object(PreprintView, "get_index_template")
+    def test_create_metric_sends_pre_index_template_create_signal(
+        self, mock_get_index_template
+    ):
         mock_listener = mock.Mock()
         pre_index_template_create.connect(mock_listener)
         PreprintView.create_index_template()
@@ -175,8 +164,8 @@ class TestIntegration:
         assert "index_template" in call_kwargs
         assert "using" in call_kwargs
 
-    @pytest.mark.es
-    def test_save_sends_signals(self):
+    @mock.patch("elasticsearch_metrics.metrics.Document.save")
+    def test_save_sends_signals(self, mock_save):
         mock_pre_save_listener = mock.Mock()
         mock_post_save_listener = mock.Mock()
         pre_save.connect(mock_pre_save_listener, sender=PreprintView)
@@ -204,19 +193,27 @@ class TestIntegration:
         assert "using" in post_save_kwargs
         assert post_save_kwargs["sender"] is PreprintView
 
-    # TODO: Can we make this test not use ES?
-    @pytest.mark.es
-    def test_source_may_be_enabled(self, client):
-        class MyMetric(metrics.Metric):
-            class Meta:
-                app_label = "dummyapp"
-                template_name = "mymetric"
-                template = "mymetric-*"
-                source = metrics.MetaField(enabled=True)
 
-        MyMetric.create_index_template()
-        template_name = MyMetric._template_name
-        template = client.indices.get_template(name=template_name)
-        mappings = template[template_name]["mappings"]
-        assert mappings["doc"]["_all"]["enabled"] is False
-        assert mappings["doc"]["_source"]["enabled"] is True
+@pytest.mark.es
+class TestIntegration:
+    def test_init(self, client):
+        PreprintView.init()
+        name = PreprintView.get_index_name()
+        mapping = client.indices.get_mapping(index=name)
+        properties = mapping[name]["mappings"]["doc"]["properties"]
+        assert properties["timestamp"] == {"type": "date"}
+        assert properties["provider_id"] == {"type": "keyword"}
+        assert properties["user_id"] == {"type": "keyword"}
+        assert properties["preprint_id"] == {"type": "keyword"}
+
+    def test_create_document(self, client):
+        provider_id = "12345"
+        user_id = "abcde"
+        preprint_id = "zyxwv"
+        doc = PreprintView(
+            provider_id=provider_id, user_id=user_id, preprint_id=preprint_id
+        )
+        doc.save()
+        document = PreprintView.get(id=doc.meta.id, index=PreprintView.get_index_name())
+        # TODO flesh out this test more.  Try to query ES?
+        assert document is not None
