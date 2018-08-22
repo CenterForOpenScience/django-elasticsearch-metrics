@@ -58,7 +58,7 @@ deploy:
   user: cos
   on:
     tags: true
-    if: $TOXENV = py36-django20
+    condition: $TOXENV = py36-django20
   distributions: sdist bdist_wheel
   password:
     secure: AEBvufx5x0RcSrQpK1uNQRgXtPnBqub/d2pkwSTf+pFABnoGxdcf0qUsXgt6I3EGGxhkkxJ+tTvJzkz2Qt0x5GE83Mh6Jn6fVlGxQIAQx5rvE0AZId2cy/+uIbcaftkaYmpXkPAMZCP5POvGiziRvEecO9YHF4OizfmDLJ+ZnmxRgMW2eCPX5isONT50E3kuztgmvClqNVdJ54XnbJ3vDD7yx0Qx1NsfTWkRGod/d2og9tx4iOM+aOmQC5ayozBkepUHyBL4Qxo1ZHccxr5zg5YYysy7QKPoBh4j/l59x7Pg0K4laBfKmDZG1tG7kBoe/H+yG+M1LWXNCYEt359QXXOA9gs/PTX7HljMEleUxboUY3uV/FgZKU63qp9UG+AjiVzBVSlH/f5o088pX54pHYnBXizoq7+EVEBuiVEzs7TiS5uqbeyDqlRnGvdG7tePorXSN3+4rAwsrSjdgP9mxRt4OkTXPy7xodSzZSosZ5rfACuChiDFFTs5ZwQS3k2MPkz14+NyTWXTIkdbsETbiHgcnW8KKHag1hES99ocI3rojilPaYm6W7XQ8TjclQ3YclhFv5dtRHlJt6MnozAyrtcCP6mSlQn1w1YlkQ2UMk+QgQGPylC4Mxkz8/bXYojSdDYe8QFANu6gyf2WqbvCUoOF/+tlJkBZ7KvNIEwy8RM=
