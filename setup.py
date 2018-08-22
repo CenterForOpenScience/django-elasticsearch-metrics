@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 import re
 import os
-from setuptools import setup
+from setuptools import setup, find_packages
 
 
 def find_version(fname):
@@ -38,7 +38,7 @@ setup(
     long_description_content_type="text/markdown",
     url="http://github.com/sloria/django-elasticsearch-metrics",
     license="MIT",
-    packages=["elasticsearch_metrics"],
+    packages=find_packages(exclude=("tests",)),
     keywords=(
         "django",
         "elastic",
