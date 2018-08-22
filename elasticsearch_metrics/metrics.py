@@ -129,10 +129,14 @@ class Metric(Document, BaseMetric):
         """Create the index and populate the mappings in elasticsearch."""
         return super(Metric, cls).init(index=index or cls.get_index_name(), using=using)
 
-    def save(self, using=None, index=None, validate=True, **kwargs):
-        self.timestamp = timezone.now()
+    def save(self, using=None, index=None, validate=True, date=None, **kwargs):
+        """Same as `Document.save`, with the addition of the
+        ``date`` parameter, which allows you to override the timestamp
+        and index.
+        """
+        self.timestamp = date or timezone.now()
         if not index:
-            index = self.get_index_name()
+            index = self.get_index_name(date=date)
 
         cls = self.__class__
         pre_save.send(cls, instance=self, using=using, index=index)

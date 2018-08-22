@@ -13,6 +13,12 @@ from tests.dummyapp.metrics import (
 )
 
 
+@pytest.fixture()
+def mock_save():
+    with mock.patch("elasticsearch_metrics.metrics.Document.save") as patch:
+        yield patch
+
+
 class PreprintView(metrics.Metric):
     provider_id = metrics.Keyword(index=True)
     user_id = metrics.Keyword(index=True)
@@ -151,6 +157,14 @@ class TestGetIndexTemplate:
         assert doc["_source"]["enabled"] is True
 
 
+class TestSave:
+    def test_can_pass_date_to_save(self, mock_save):
+        timestamp = dt.datetime(2017, 8, 21)
+        p = PreprintView()
+        p.save(date=timestamp)
+        assert p.timestamp == timestamp
+
+
 class TestSignals:
     @mock.patch.object(PreprintView, "get_index_template")
     def test_create_metric_sends_pre_index_template_create_signal(
@@ -164,7 +178,6 @@ class TestSignals:
         assert "index_template" in call_kwargs
         assert "using" in call_kwargs
 
-    @mock.patch("elasticsearch_metrics.metrics.Document.save")
     def test_save_sends_signals(self, mock_save):
         mock_pre_save_listener = mock.Mock()
         mock_post_save_listener = mock.Mock()
