@@ -13,12 +13,6 @@ from tests.dummyapp.metrics import (
 )
 
 
-@pytest.fixture()
-def mock_save():
-    with mock.patch("elasticsearch_metrics.metrics.Document.save") as patch:
-        yield patch
-
-
 class PreprintView(metrics.Metric):
     provider_id = metrics.Keyword(index=True)
     user_id = metrics.Keyword(index=True)

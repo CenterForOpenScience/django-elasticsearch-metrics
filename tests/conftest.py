@@ -1,3 +1,4 @@
+import mock
 import pytest
 
 from elasticsearch_dsl import connections
@@ -25,6 +26,12 @@ def _es_marker(request, client):
         teardown_es()
     else:
         yield
+
+
+@pytest.fixture()
+def mock_save():
+    with mock.patch("elasticsearch_metrics.metrics.Document.save") as patch:
+        yield patch
 
 
 @pytest.fixture()

@@ -2,7 +2,7 @@ from elasticsearch_metrics import metrics
 
 
 class DummyMetric(metrics.Metric):
-    pass
+    my_int = metrics.Integer()
 
 
 class DummyMetricWithExplicitTemplateName(metrics.Metric):
