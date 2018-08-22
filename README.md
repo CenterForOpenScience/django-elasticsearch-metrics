@@ -151,6 +151,26 @@ class PageView(MyBaseMetric):
         app_label = "myapp"
 ```
 
+## Optional factory_boy integration
+
+```python
+import factory
+from elasticsearch_metrics.factory import MetricFactory
+
+from ..myapp.metrics import MyMetric
+
+
+class MyMetricFactory(MetricFactory):
+    my_int = factory.Faker("pyint")
+
+    class Meta:
+        model = MyMetric
+
+
+def test_something():
+    metric = MyMetricFactory()  # index metric in ES
+    assert isinstance(metric.my_int, int)
+```
 
 ## Configuration
 
