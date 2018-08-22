@@ -2,10 +2,15 @@
 
 ## 2.0.0 (unreleased)
 
+Features:
+
 * *Backwards-incompatible*: By default, `Metric.search`, `Metric.get`, and `Metric.mget` will use
     the metric's template pattern as the default index (e.g.  `myapp_mymetric-*`).
+* Add `date` parameter to `Metric.save`.
 
 ## 1.0.1 (2018-08-22)
+
+Bug fixes:
 
 * Include management/ folder in distribution.
 
