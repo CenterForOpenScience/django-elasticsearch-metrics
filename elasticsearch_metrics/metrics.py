@@ -141,3 +141,10 @@ class Metric(Document, BaseMetric):
         )
         post_save.send(cls, instance=self, using=using, index=index)
         return ret
+
+    @classmethod
+    def _default_index(cls, index=None):
+        """Overrides Document._default_index so that .search, .get, etc.
+        use the metric's template pattern as the default index
+        """
+        return index or cls._template
