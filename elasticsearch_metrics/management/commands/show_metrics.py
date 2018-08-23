@@ -26,7 +26,9 @@ class Command(BaseCommand):
             )
             metrics = registry.get_metrics(app_label=app_label)
             for metric in metrics:
-                line = "\t".join(
-                    [style.METRIC(metric.__name__), style.ES_TEMPLATE(metric._template)]
+                metric_name = style.METRIC(metric.__name__)
+                template_name = metric._template_name
+                template = style.ES_TEMPLATE(metric._template)
+                self.stdout.write(
+                    "  {metric_name} -> {template_name} ({template})".format(**locals())
                 )
-                self.stdout.write("\t{}".format(line))
