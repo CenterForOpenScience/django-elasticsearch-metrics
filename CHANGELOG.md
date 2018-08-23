@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.1.0 (unreleased)
+
+Features:
+
+* Add `post_index_template_create` signal.
+* Add `--connection` argument to `sync_metrics`.
+* Make `show_metrics` output more consistent with `sync_metrics`.
+
 ## 2.0.0 (2018-08-22)
 
 Features:
