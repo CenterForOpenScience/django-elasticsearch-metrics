@@ -13,10 +13,17 @@ class Command(BaseCommand):
             nargs="?",
             help="App label of an application to synchronize the state.",
         )
-        # TODO: "using"
+        parser.add_argument(
+            "--connection",
+            action="store",
+            dest="connection",
+            default=None,
+            help='Elasticsearch connection to use. Defaults to the "default" connection.',
+        )
 
     def handle(self, *args, **options):
         style = color_style()
+        connection = options["connection"]
         if options["app_label"]:
             if options["app_label"] not in registry.all_metrics:
                 raise CommandError(
@@ -25,9 +32,11 @@ class Command(BaseCommand):
             app_labels = [options["app_label"]]
         else:
             app_labels = registry.all_metrics.keys()
+        if connection:
+            self.stdout.write("Using connection: '{}'".format(connection))
         for app_label in app_labels:
             self.stdout.write(
-                "Syncing metrics for app '{}'".format(app_label), style.MIGRATE_HEADING
+                "Syncing metrics for app: '{}'".format(app_label), style.MIGRATE_HEADING
             )
             metrics = registry.get_metrics(app_label=app_label)
             for metric in metrics:
@@ -39,6 +48,6 @@ class Command(BaseCommand):
                         **locals()
                     )
                 )
-                metric.create_index_template()
+                metric.create_index_template(using=connection)
 
         self.stdout.write("Synchronized metrics.", style.SUCCESS)

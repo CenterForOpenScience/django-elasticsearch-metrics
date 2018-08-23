@@ -32,3 +32,14 @@ def test_with_app_label(run_mgmt_command, mock_create_index_template):
 
     out, err = run_mgmt_command(Command, ["sync_metrics", "dummyapp2"])
     assert mock_create_index_template.call_count == 1
+
+
+def test_with_connection(run_mgmt_command, mock_create_index_template, settings):
+    settings.ELASTICSEARCH_DSL = {
+        "default": {"hosts": "localhost:9201"},
+        "alternate": {"hosts": "localhost:9202"},
+    }
+    out, err = run_mgmt_command(Command, ["sync_metrics", "--connection", "alternate"])
+    call_kwargs = mock_create_index_template.call_args[1]
+    assert call_kwargs["using"] == "alternate"
+    assert "Using connection: 'alternate'" in out
