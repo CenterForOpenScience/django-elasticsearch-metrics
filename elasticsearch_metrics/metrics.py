@@ -5,7 +5,7 @@ from django.utils.six import add_metaclass
 from elasticsearch_dsl import Document
 from elasticsearch_dsl.document import IndexMeta, MetaField
 
-from elasticsearch_metrics.signals import pre_index_template_create, pre_save, post_save
+from elasticsearch_metrics import signals
 from elasticsearch_metrics.registry import registry
 
 # Fields should be imported from this module
@@ -100,8 +100,13 @@ class BaseMetric(object):
         """Create an index template for this metric in Elasticsearch."""
         index_template = cls.get_index_template()
         index_template.document(cls)
-        pre_index_template_create.send(cls, index_template=index_template, using=using)
+        signals.pre_index_template_create.send(
+            cls, index_template=index_template, using=using
+        )
         index_template.save(using=using)
+        signals.post_index_template_create.send(
+            cls, index_template=index_template, using=using
+        )
         return index_template
 
     @classmethod
@@ -139,11 +144,11 @@ class Metric(Document, BaseMetric):
             index = self.get_index_name(date=date)
 
         cls = self.__class__
-        pre_save.send(cls, instance=self, using=using, index=index)
+        signals.pre_save.send(cls, instance=self, using=using, index=index)
         ret = super(Metric, self).save(
             using=using, index=index, validate=validate, **kwargs
         )
-        post_save.send(cls, instance=self, using=using, index=index)
+        signals.post_save.send(cls, instance=self, using=using, index=index)
         return ret
 
     @classmethod

@@ -5,7 +5,7 @@ from django.utils import timezone
 from elasticsearch_metrics import metrics
 from elasticsearch_dsl import IndexTemplate
 
-from elasticsearch_metrics.signals import pre_index_template_create, pre_save, post_save
+from elasticsearch_metrics import signals
 from tests.dummyapp.metrics import (
     DummyMetric,
     DummyMetricWithExplicitTemplateName,
@@ -161,22 +161,27 @@ class TestSave:
 
 class TestSignals:
     @mock.patch.object(PreprintView, "get_index_template")
-    def test_create_metric_sends_pre_index_template_create_signal(
-        self, mock_get_index_template
-    ):
-        mock_listener = mock.Mock()
-        pre_index_template_create.connect(mock_listener)
+    def test_create_metric_sends_signals(self, mock_get_index_template):
+        mock_pre_index_template_listener = mock.Mock()
+        mock_post_index_template_listener = mock.Mock()
+        signals.pre_index_template_create.connect(mock_pre_index_template_listener)
+        signals.post_index_template_create.connect(mock_post_index_template_listener)
         PreprintView.create_index_template()
-        assert mock_listener.call_count == 1
-        call_kwargs = mock_listener.call_args[1]
-        assert "index_template" in call_kwargs
-        assert "using" in call_kwargs
+        assert mock_pre_index_template_listener.call_count == 1
+        assert mock_post_index_template_listener.call_count == 1
+        pre_call_kwargs = mock_pre_index_template_listener.call_args[1]
+        assert "index_template" in pre_call_kwargs
+        assert "using" in pre_call_kwargs
+
+        post_call_kwargs = mock_pre_index_template_listener.call_args[1]
+        assert "index_template" in post_call_kwargs
+        assert "using" in post_call_kwargs
 
     def test_save_sends_signals(self, mock_save):
         mock_pre_save_listener = mock.Mock()
         mock_post_save_listener = mock.Mock()
-        pre_save.connect(mock_pre_save_listener, sender=PreprintView)
-        post_save.connect(mock_post_save_listener, sender=PreprintView)
+        signals.pre_save.connect(mock_pre_save_listener, sender=PreprintView)
+        signals.post_save.connect(mock_post_save_listener, sender=PreprintView)
 
         provider_id = "12345"
         user_id = "abcde"
