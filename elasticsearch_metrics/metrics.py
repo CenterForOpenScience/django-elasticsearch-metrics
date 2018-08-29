@@ -125,6 +125,16 @@ class BaseMetric(object):
         date_formatted = date.strftime(dateformat)
         return "{}-{}".format(cls._template_name, date_formatted)
 
+    @classmethod
+    def record(cls, **kwargs):
+        """Persist a metric in Elasticsearch.
+        """
+        timestamp = kwargs.get("timestamp", None) or timezone.now()
+        instance = cls(**kwargs)
+        index = cls.get_index_name(timestamp)
+        instance.save(index=index)
+        return instance
+
 
 class Metric(Document, BaseMetric):
     __doc__ = BaseMetric.__doc__
@@ -134,14 +144,13 @@ class Metric(Document, BaseMetric):
         """Create the index and populate the mappings in elasticsearch."""
         return super(Metric, cls).init(index=index or cls.get_index_name(), using=using)
 
-    def save(self, using=None, index=None, validate=True, date=None, **kwargs):
-        """Same as `Document.save`, with the addition of the
-        ``date`` parameter, which allows you to override the timestamp
-        and index.
+    def save(self, using=None, index=None, validate=True, **kwargs):
+        """Same as `Document.save`, except will save into the index determined
+        by the metric's timestamp field.
         """
-        self.timestamp = date or timezone.now()
+        self.timestamp = self.timestamp or timezone.now()
         if not index:
-            index = self.get_index_name(date=date)
+            index = self.get_index_name(date=self.timestamp)
 
         cls = self.__class__
         signals.pre_save.send(cls, instance=self, using=using, index=index)

@@ -151,12 +151,22 @@ class TestGetIndexTemplate:
         assert doc["_source"]["enabled"] is True
 
 
-class TestSave:
-    def test_can_pass_date_to_save(self, mock_save):
+class TestRecord:
+    def test_calls_save(self, mock_save):
         timestamp = dt.datetime(2017, 8, 21)
-        p = PreprintView()
-        p.save(date=timestamp)
+        p = PreprintView.record(timestamp=timestamp, provider_id="abc12")
+        assert mock_save.call_count == 1
         assert p.timestamp == timestamp
+        assert p.provider_id == "abc12"
+
+    @mock.patch.object(timezone, "now")
+    def test_defaults_timestamp_to_now(self, mock_now, mock_save):
+        fake_now = dt.datetime(2016, 8, 21)
+        mock_now.return_value = fake_now
+
+        p = PreprintView.record(provider_id="abc12")
+        assert mock_save.call_count == 1
+        assert p.timestamp == fake_now
 
 
 class TestSignals:
