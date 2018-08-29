@@ -3,7 +3,7 @@ from django.conf import settings
 from elasticsearch_dsl.connections import connections
 from django.utils.module_loading import autodiscover_modules
 
-__version__ = "3.0.0"
+__version__ = "3.1.0"
 
 default_app_config = "elasticsearch_metrics.ElasticsearchMetricsConfig"
 
