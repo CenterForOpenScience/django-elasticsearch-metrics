@@ -89,7 +89,7 @@ class BaseMetric(object):
                 }
     """
 
-    timestamp = Date(doc_values=True)
+    timestamp = Date(doc_values=True, required=True)
 
     class Meta:
         all = MetaField(enabled=False)

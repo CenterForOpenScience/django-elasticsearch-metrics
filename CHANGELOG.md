@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.1.0 (2018-08-29)
+
+Features:
+
+* Make `Metric.timestamp` required.
+
 ## 3.0.0 (2018-08-29)
 
 Features:
