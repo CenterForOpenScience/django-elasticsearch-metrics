@@ -1,5 +1,12 @@
 # Changelog
 
+## 3.0.0 (unreleased)
+
+Features:
+
+* Add `Metric.record`.
+* Remove `date` parameter from `Metric.save`.
+
 ## 2.1.0 (2018-08-23)
 
 Features:

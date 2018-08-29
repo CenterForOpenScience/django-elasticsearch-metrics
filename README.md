@@ -66,11 +66,10 @@ from myapp.metrics import PageView
 
 user = User.objects.latest()
 
-view = PageView(user_id=user.id)
 # By default we create an index for each day.
 # Therefore, this will persist the document
 # to an index called, e.g. "myapp_pageview-2020.02.04"
-view.save()
+PageView.record(user_id=user.id)
 ```
 
 Go forth and search!
