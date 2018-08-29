@@ -126,11 +126,12 @@ class BaseMetric(object):
         return "{}-{}".format(cls._template_name, date_formatted)
 
     @classmethod
-    def record(cls, **kwargs):
+    def record(cls, timestamp=None, **kwargs):
         """Persist a metric in Elasticsearch.
+
+        :param datetime timestamp: Timestamp for the metric.
         """
-        timestamp = kwargs.get("timestamp", None) or timezone.now()
-        instance = cls(**kwargs)
+        instance = cls(timestamp=timestamp, **kwargs)
         index = cls.get_index_name(timestamp)
         instance.save(index=index)
         return instance
