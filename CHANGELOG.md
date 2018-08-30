@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.2.0 (2018-08-30)
+
+Features:
+
+* Add `check_metrics` command.
+
 ## 3.1.0 (2018-08-29)
 
 Features:
