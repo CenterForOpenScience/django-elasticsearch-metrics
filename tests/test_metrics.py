@@ -239,3 +239,8 @@ class TestIntegration:
         document = PreprintView.get(id=doc.meta.id, index=PreprintView.get_index_name())
         # TODO flesh out this test more.  Try to query ES?
         assert document is not None
+
+    def test_check_index_template(self):
+        assert PreprintView.check_index_template_exists() is False
+        PreprintView.create_index_template()
+        assert PreprintView.check_index_template_exists() is True

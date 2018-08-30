@@ -8,8 +8,10 @@ from elasticsearch_metrics.registry import registry
 
 @pytest.fixture()
 def mock_create_index_template():
-    patch = mock.patch("elasticsearch_metrics.metrics.Metric.create_index_template")
-    return patch.start()
+    with mock.patch(
+        "elasticsearch_metrics.metrics.Metric.create_index_template"
+    ) as patch:
+        yield patch
 
 
 def test_without_args(run_mgmt_command, mock_create_index_template):
