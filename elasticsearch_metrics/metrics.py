@@ -2,7 +2,8 @@ from django.apps import apps
 from django.conf import settings
 from django.utils import timezone
 from django.utils.six import add_metaclass
-from elasticsearch_dsl import Document
+from elasticsearch.exceptions import NotFoundError
+from elasticsearch_dsl import Document, connections
 from elasticsearch_dsl.document import IndexMeta, MetaField
 
 from elasticsearch_metrics import signals
@@ -108,6 +109,16 @@ class BaseMetric(object):
             cls, index_template=index_template, using=using
         )
         return index_template
+
+    @classmethod
+    def check_index_template_exists(cls, using=None):
+        client = connections.get_connection(using or "default")
+        try:
+            client.indices.get_template(cls._template_name)
+        except NotFoundError:
+            return False
+        else:
+            return True
 
     @classmethod
     def get_index_template(cls):

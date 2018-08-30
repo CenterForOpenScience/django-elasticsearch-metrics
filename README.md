@@ -195,6 +195,8 @@ python manage.py sync_metrics
 ```
 
 * `show_metrics`: Pretty-print a listing of all registered metrics.
+* `check_metrics`: Check if index templates have been created. Exits
+    with an error code if any metrics are out of sync.
 
 ```
 python manage.py show_metrics
