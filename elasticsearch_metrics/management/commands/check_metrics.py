@@ -2,6 +2,8 @@ import sys
 import logging
 from django.core.management.base import BaseCommand, CommandError
 
+from django.utils.termcolors import colorize
+
 from elasticsearch_metrics.registry import registry
 from elasticsearch_metrics import exceptions
 from elasticsearch_metrics.management.color import color_style
@@ -34,8 +36,8 @@ class Command(BaseCommand):
         else:
             app_labels = registry.all_metrics.keys()
 
-        out_of_sync = False
-        self.stdout.write("Checking for missing index templates...")
+        out_of_sync_count = 0
+        self.stdout.write("Checking for outdated index templates...")
         for app_label in app_labels:
             metrics = registry.get_metrics(app_label=app_label)
             for metric in metrics:
@@ -45,10 +47,16 @@ class Command(BaseCommand):
                     exceptions.IndexTemplateNotFoundError,
                     exceptions.IndexTemplateOutOfSyncError,
                 ) as error:
-                    self.stdout.write(error.args[0], style.ERROR)
-                    out_of_sync = True
+                    self.stdout.write("  " + error.args[0])
+                    out_of_sync_count += 1
 
-        if out_of_sync:
+        if out_of_sync_count:
+            self.stdout.write(
+                "{} index template(s) out of sync.".format(out_of_sync_count),
+                style.ERROR,
+            )
+            cmd = colorize("python manage.py sync_metrics", opts=("bold",))
+            self.stdout.write("Run {cmd} to synchronize.".format(cmd=cmd))
             sys.exit(1)
         else:
             self.stdout.write("All metrics in sync.", style.SUCCESS)
