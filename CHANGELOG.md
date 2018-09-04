@@ -9,6 +9,11 @@ Features:
 * *Backwards-incompatible*: Remove `Metric.check_index_template_exists`.
     Use `Metric.check_index_template` instead.
 
+Other changes:
+
+* *Backwards-incompatible*: Rename `Metric.create_index_template` to
+    `Metric.sync_index_template`.
+
 ## 3.2.0 (2018-08-30)
 
 Features:

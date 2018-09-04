@@ -48,6 +48,6 @@ class Command(BaseCommand):
                         **locals()
                     )
                 )
-                metric.create_index_template(using=connection)
+                metric.sync_index_template(using=connection)
 
         self.stdout.write("Synchronized metrics.", style.SUCCESS)
