@@ -6,6 +6,10 @@ from elasticsearch_metrics import metrics
 from elasticsearch_dsl import IndexTemplate
 
 from elasticsearch_metrics import signals
+from elasticsearch_metrics.exceptions import (
+    IndexTemplateNotFoundError,
+    IndexTemplateOutOfSyncError,
+)
 from tests.dummyapp.metrics import (
     DummyMetric,
     DummyMetricWithExplicitTemplateName,
@@ -241,6 +245,19 @@ class TestIntegration:
         assert document is not None
 
     def test_check_index_template(self):
-        assert PreprintView.check_index_template_exists() is False
+        with pytest.raises(IndexTemplateNotFoundError):
+            assert PreprintView.check_index_template() is False
         PreprintView.create_index_template()
-        assert PreprintView.check_index_template_exists() is True
+        assert PreprintView.check_index_template() is True
+
+        # When settings change, template is out of sync
+        PreprintView._index.settings(**{"refresh_interval": "1s"})
+        with pytest.raises(IndexTemplateOutOfSyncError) as excinfo:
+            assert PreprintView.check_index_template() is False
+        error = excinfo.value
+        assert error.settings_in_sync is False
+        assert error.mappings_in_sync is True
+        assert error.patterns_in_sync is True
+
+        PreprintView.create_index_template()
+        assert PreprintView.check_index_template() is True

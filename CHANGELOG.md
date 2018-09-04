@@ -1,5 +1,14 @@
 # Changelog
 
+## 4.0.0 (unreleased)
+
+Features:
+
+* Add `Metric.check_index_template`, which checks that the state of the
+    metric is in sync with the index template in Elasticsearch.
+* *Backwards-incompatible*: Remove `Metric.check_index_template_exists`.
+    Use `Metric.check_index_template` instead.
+
 ## 3.2.0 (2018-08-30)
 
 Features:
