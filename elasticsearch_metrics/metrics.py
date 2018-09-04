@@ -7,6 +7,7 @@ from elasticsearch_dsl import Document, connections
 from elasticsearch_dsl.document import IndexMeta, MetaField
 
 from elasticsearch_metrics import signals
+from elasticsearch_metrics import exceptions
 from elasticsearch_metrics.registry import registry
 
 # Fields should be imported from this module
@@ -111,13 +112,59 @@ class BaseMetric(object):
         return index_template
 
     @classmethod
-    def check_index_template_exists(cls, using=None):
+    def check_index_template(cls, using=None):
+        """Check if class is in sync with index template in Elasticsearch.
+
+        :raise: IndexTemplateNotFoundError if index template does not exist.
+        :raise: IndexTemplateOutOfSyncError if mappings, settings, or index patterns
+            are out of sync.
+        :return: True if index template exsits and mappings, settings, and index patterns
+            are in sync.
+        """
         client = connections.get_connection(using or "default")
         try:
-            client.indices.get_template(cls._template_name)
-        except NotFoundError:
-            return False
+            template = client.indices.get_template(cls._template_name)
+        except NotFoundError as client_error:
+            template_name = cls._template_name
+            metric_name = cls.__name__
+            raise exceptions.IndexTemplateNotFoundError(
+                "{template_name} does not exist for {metric_name}".format(**locals()),
+                client_error=client_error,
+            )
         else:
+            current_data = list(template.values())[0]
+            template_data = cls.get_index_template().to_dict()
+
+            mappings_in_sync = current_data["mappings"] == template_data["mappings"]
+            if "settings" in current_data and "index" in current_data["settings"]:
+                settings_in_sync = current_data["settings"][
+                    "index"
+                ] == template_data.get("settings", {})
+            else:
+                settings_in_sync = True
+            patterns_in_sync = (
+                current_data["index_patterns"] == template_data["index_patterns"]
+            )
+
+            if not all([mappings_in_sync, settings_in_sync, patterns_in_sync]):
+                template_name = cls._template_name
+                metric_name = cls.__name__
+                word_map = {
+                    "mappings": mappings_in_sync,
+                    "patterns": patterns_in_sync,
+                    "settings": settings_in_sync,
+                }
+                out_of_sync = ", ".join(
+                    [key for key, value in word_map.items() if not value]
+                )
+                raise exceptions.IndexTemplateOutOfSyncError(
+                    "{template_name} is out of sync with {metric_name} ({out_of_sync})".format(
+                        **locals()
+                    ),
+                    mappings_in_sync=mappings_in_sync,
+                    patterns_in_sync=patterns_in_sync,
+                    settings_in_sync=settings_in_sync,
+                )
             return True
 
     @classmethod

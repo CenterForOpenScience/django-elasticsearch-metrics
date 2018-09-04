@@ -3,6 +3,7 @@ import logging
 from django.core.management.base import BaseCommand, CommandError
 
 from elasticsearch_metrics.registry import registry
+from elasticsearch_metrics import exceptions
 from elasticsearch_metrics.management.color import color_style
 
 
@@ -38,20 +39,15 @@ class Command(BaseCommand):
         for app_label in app_labels:
             metrics = registry.get_metrics(app_label=app_label)
             for metric in metrics:
-                metric_has_template = metric.check_index_template_exists(
-                    using=connection
-                )
-                if not out_of_sync and not metric_has_template:
+                try:
+                    metric.check_index_template(using=connection)
+                except (
+                    exceptions.IndexTemplateNotFoundError,
+                    exceptions.IndexTemplateOutOfSyncError,
+                ) as error:
+                    self.stdout.write(error.args[0], style.ERROR)
                     out_of_sync = True
-                if not metric_has_template:
-                    metric_name = metric.__name__
-                    template_name = metric._template_name
-                    self.stdout.write(
-                        "  {template_name} does not exist for {metric_name}".format(
-                            **locals()
-                        ),
-                        style.ERROR,
-                    )
+
         if out_of_sync:
             sys.exit(1)
         else:
