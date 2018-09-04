@@ -98,8 +98,8 @@ class BaseMetric(object):
         source = MetaField(enabled=False)
 
     @classmethod
-    def create_index_template(cls, using=None):
-        """Create an index template for this metric in Elasticsearch."""
+    def sync_index_template(cls, using=None):
+        """Sync the index template for this metric in Elasticsearch."""
         index_template = cls.get_index_template()
         index_template.document(cls)
         signals.pre_index_template_create.send(

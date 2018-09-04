@@ -180,7 +180,7 @@ class TestSignals:
         mock_post_index_template_listener = mock.Mock()
         signals.pre_index_template_create.connect(mock_pre_index_template_listener)
         signals.post_index_template_create.connect(mock_post_index_template_listener)
-        PreprintView.create_index_template()
+        PreprintView.sync_index_template()
         assert mock_pre_index_template_listener.call_count == 1
         assert mock_post_index_template_listener.call_count == 1
         pre_call_kwargs = mock_pre_index_template_listener.call_args[1]
@@ -247,7 +247,7 @@ class TestIntegration:
     def test_check_index_template(self):
         with pytest.raises(IndexTemplateNotFoundError):
             assert PreprintView.check_index_template() is False
-        PreprintView.create_index_template()
+        PreprintView.sync_index_template()
         assert PreprintView.check_index_template() is True
 
         # When settings change, template is out of sync
@@ -259,5 +259,5 @@ class TestIntegration:
         assert error.mappings_in_sync is True
         assert error.patterns_in_sync is True
 
-        PreprintView.create_index_template()
+        PreprintView.sync_index_template()
         assert PreprintView.check_index_template() is True
