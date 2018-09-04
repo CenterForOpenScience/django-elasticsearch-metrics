@@ -3,7 +3,7 @@ from django.conf import settings
 from django.utils import timezone
 from django.utils.six import add_metaclass
 from elasticsearch.exceptions import NotFoundError
-from elasticsearch_dsl import Document, connections
+from elasticsearch_dsl import Document, connections, Index
 from elasticsearch_dsl.document import IndexMeta, MetaField
 
 from elasticsearch_metrics import signals
@@ -67,6 +67,21 @@ class MetricMeta(IndexMeta):
         if not abstract:
             registry.register(app_label, new_cls)
         return new_cls
+
+    # Override IndexMeta.construct_index so that
+    # a new Index is created for every metric class
+    @classmethod
+    def construct_index(cls, opts, bases):
+        i = Index(
+            getattr(opts, "name", "*"),
+            doc_type=getattr(opts, "doc_type", "doc"),
+            using=getattr(opts, "using", "default"),
+        )
+        i.settings(**getattr(opts, "settings", {}))
+        i.aliases(**getattr(opts, "aliases", {}))
+        for a in getattr(opts, "analyzers", ()):
+            i.analyzer(a)
+        return i
 
 
 # We need this intermediate BaseMetric class so that

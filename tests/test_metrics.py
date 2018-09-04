@@ -78,6 +78,15 @@ class TestGetIndexTemplate:
         assert properties["user_id"] == {"type": "keyword", "index": True}
         assert properties["preprint_id"] == {"type": "keyword", "index": True}
 
+    # regression test
+    def test_mappings_are_not_shared(self):
+        template1 = DummyMetric.get_index_template()
+        template2 = DummyMetricWithExplicitTemplateName.get_index_template()
+        assert "my_int" in template1.to_dict()["mappings"]["doc"]["properties"]
+        assert "my_keyword" not in template1.to_dict()["mappings"]["doc"]["properties"]
+        assert "my_int" not in template2.to_dict()["mappings"]["doc"]["properties"]
+        assert "my_keyword" in template2.to_dict()["mappings"]["doc"]["properties"]
+
     def test_declaring_metric_with_no_app_label_or_template_name_errors(self):
         with pytest.raises(RuntimeError):
 
