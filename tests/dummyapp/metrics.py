@@ -6,6 +6,8 @@ class DummyMetric(metrics.Metric):
 
 
 class DummyMetricWithExplicitTemplateName(metrics.Metric):
+    my_keyword = metrics.Keyword()
+
     class Meta:
         template_name = "dummymetric"
 

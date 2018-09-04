@@ -9,6 +9,11 @@ Features:
 * *Backwards-incompatible*: Remove `Metric.check_index_template_exists`.
     Use `Metric.check_index_template` instead.
 
+Bug fixes:
+
+* Fix bug where different `Metric` subclasses were sharing the same
+    index settings (incl. mappings).
+
 Other changes:
 
 * *Backwards-incompatible*: Rename `Metric.create_index_template` to
