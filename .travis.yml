@@ -54,6 +54,8 @@ jobs:
     env: TOXENV=py36-django20
   - python: '3.6'
     env: TOXENV=lint
+    before_install: skip
+    before_cache: skip
   - stage: PyPI Release
     if: tag IS present
     python: "3.6"
