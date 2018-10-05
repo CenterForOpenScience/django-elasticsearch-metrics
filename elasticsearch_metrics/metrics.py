@@ -5,6 +5,7 @@ from django.utils.six import add_metaclass
 from elasticsearch.exceptions import NotFoundError
 from elasticsearch_dsl import Document, connections, Index
 from elasticsearch_dsl.document import IndexMeta, MetaField
+from elasticsearch_dsl.index import DEFAULT_INDEX
 
 from elasticsearch_metrics import signals
 from elasticsearch_metrics import exceptions
@@ -72,11 +73,28 @@ class MetricMeta(IndexMeta):
     # a new Index is created for every metric class
     @classmethod
     def construct_index(cls, opts, bases):
-        i = Index(
-            getattr(opts, "name", "*"),
-            doc_type=getattr(opts, "doc_type", "doc"),
-            using=getattr(opts, "using", "default"),
-        )
+        i = None
+        if opts is None:
+            # Inherit Index from base classes
+            for b in bases:
+                if getattr(b, "_index", DEFAULT_INDEX) is not DEFAULT_INDEX:
+                    parent_index = b._index
+                    i = Index(
+                        parent_index._name,
+                        doc_type=parent_index._mapping.doc_type,
+                        using=parent_index._using,
+                    )
+                    i._settings = parent_index._settings.copy()
+                    i._aliases = parent_index._aliases.copy()
+                    i._analysis = parent_index._analysis.copy()
+                    i._doc_types = parent_index._doc_types[:]
+                    break
+        if i is None:
+            i = Index(
+                getattr(opts, "name", "*"),
+                doc_type=getattr(opts, "doc_type", "doc"),
+                using=getattr(opts, "using", "default"),
+            )
         i.settings(**getattr(opts, "settings", {}))
         i.aliases(**getattr(opts, "aliases", {}))
         for a in getattr(opts, "analyzers", ()):

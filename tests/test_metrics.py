@@ -138,6 +138,9 @@ class TestGetIndexTemplate:
         class MyBaseMetric(metrics.Metric):
             user_id = metrics.Keyword(index=True)
 
+            class Index:
+                settings = {"number_of_shards": 2}
+
             class Meta:
                 abstract = True
 
@@ -147,6 +150,7 @@ class TestGetIndexTemplate:
 
         template = ConcreteMetric.get_index_template()
         assert template._template_name == "dummyapp_concretemetric"
+        assert template._index.to_dict()["settings"] == {"number_of_shards": 2}
 
     def test_source_may_be_enabled(self):
         class MyMetric(metrics.Metric):
