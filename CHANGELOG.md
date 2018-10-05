@@ -1,5 +1,11 @@
 # Changelog
 
+## 4.0.1 (2018-10-05)
+
+Bug fixes:
+
+* Fix inheritance of `Index` settings.
+
 ## 4.0.0 (2018-09-04)
 
 Features:
