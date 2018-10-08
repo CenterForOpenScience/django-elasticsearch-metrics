@@ -69,7 +69,6 @@ class TestGetIndexTemplate:
     def test_get_index_template_creates_template_with_mapping(self):
         template = PreprintView.get_index_template()
         mappings = template.to_dict()["mappings"]
-        assert mappings["doc"]["_all"]["enabled"] is False
         assert mappings["doc"]["_source"]["enabled"] is False
         properties = mappings["doc"]["properties"]
         assert "timestamp" in properties
@@ -164,7 +163,6 @@ class TestGetIndexTemplate:
 
         template_dict = template.to_dict()
         doc = template_dict["mappings"]["doc"]
-        assert doc["_all"]["enabled"] is False
         assert doc["_source"]["enabled"] is True
 
 

@@ -127,7 +127,6 @@ class BaseMetric(object):
     timestamp = Date(doc_values=True, required=True)
 
     class Meta:
-        all = MetaField(enabled=False)
         source = MetaField(enabled=False)
 
     @classmethod
