@@ -223,7 +223,7 @@ Signals are located in the `elasticsearch_metrics.signals` module.
 
 ## Caveats
 
-* `_source` and `_all` are disabled by default on metric indices in order to save
+* `_source` is disabled by default on metric indices in order to save
     disk space. For most metrics use cases, Users will not need to retrieve the source
     JSON documents. Be sure to understand the consequences of
     this: https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-source-field.html#_disabling_source .
