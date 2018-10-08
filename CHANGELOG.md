@@ -1,5 +1,12 @@
 # Changelog
 
+## 4.0.2 (2018-10-08)
+
+Bug fixes:
+
+* Don't set `_all` on mappings. This prevents a DeprecationWarning in
+    Elasticsearch 6.
+
 ## 4.0.1 (2018-10-05)
 
 Bug fixes:
