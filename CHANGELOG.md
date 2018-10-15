@@ -1,5 +1,12 @@
 # Changelog
 
+## 4.0.3 (2018-10-15)
+
+Bug fixes:
+
+* Fix `check_metrics` exiting with an error when "number_of_shards"  or
+    "number_of_replicas" is set on a metric.
+
 ## 4.0.2 (2018-10-08)
 
 Bug fixes:
