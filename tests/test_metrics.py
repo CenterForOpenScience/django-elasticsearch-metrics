@@ -262,7 +262,9 @@ class TestIntegration:
         assert PreprintView.check_index_template() is True
 
         # When settings change, template is out of sync
-        PreprintView._index.settings(**{"refresh_interval": "1s"})
+        PreprintView._index.settings(
+            **{"refresh_interval": "1s", "number_of_shards": 1, "number_of_replicas": 2}
+        )
         with pytest.raises(IndexTemplateOutOfSyncError) as excinfo:
             assert PreprintView.check_index_template() is False
         error = excinfo.value

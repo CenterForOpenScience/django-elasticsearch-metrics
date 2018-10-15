@@ -169,9 +169,16 @@ class BaseMetric(object):
 
             mappings_in_sync = current_data["mappings"] == template_data["mappings"]
             if "settings" in current_data and "index" in current_data["settings"]:
-                settings_in_sync = current_data["settings"][
-                    "index"
-                ] == template_data.get("settings", {})
+                current_settings = current_data["settings"]["index"]
+                template_settings = template_data.get("settings", {})
+                # ES automatically casts number_of_shards and number_of_replicas to a string
+                # so we need to cast before we compare
+                # TODO: Are there other settings that need to be handled?
+                number_settings = {"number_of_shards", "number_of_replicas"}
+                for setting in number_settings:
+                    if setting in template_settings:
+                        template_settings[setting] = str(template_settings[setting])
+                settings_in_sync = current_settings == template_settings
             else:
                 settings_in_sync = True
             patterns_in_sync = (
