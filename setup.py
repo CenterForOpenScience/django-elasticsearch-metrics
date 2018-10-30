@@ -4,6 +4,18 @@ import re
 import os
 from setuptools import setup, find_packages
 
+EXTRAS_REQUIRE = {
+    "tests": ["pytest", "mock", "pytest-django==3.4.3", "factory-boy==2.11.1"],
+    "lint": [
+        "flake8==3.6.0",
+        'flake8-bugbear==18.8.0; python_version >= "3.5"',
+        "pre-commit==1.12.0",
+    ],
+}
+EXTRAS_REQUIRE["dev"] = (
+    EXTRAS_REQUIRE["tests"] + EXTRAS_REQUIRE["lint"] + ["konch", "tox"]
+)
+
 
 def find_version(fname):
     """Attempts to find the version number in the file names fname.
@@ -49,6 +61,7 @@ setup(
         "statistics",
     ),
     install_requires=["elasticsearch-dsl>=6.0.0"],
+    extras_require=EXTRAS_REQUIRE,
     classifiers=[
         "Operating System :: OS Independent",
         "Programming Language :: Python",

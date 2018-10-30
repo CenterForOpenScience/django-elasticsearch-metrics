@@ -3,7 +3,7 @@
 ## Setting up for development
 
 * Create and activate a new virtual environment
-* `pip install -r dev-requirements.txt`
+* `pip install -e '.[dev]'`
 * Install django: `pip install django`
 * (Optional but recommended) Run elasticsearch: `docker-compose up`
 * (Optional but recommended) If you're using a Python 3.6 virtual
