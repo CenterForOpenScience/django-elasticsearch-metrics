@@ -52,6 +52,8 @@ jobs:
   - { python: '3.6', env: TOXENV=py36-django20 }
   - { python: '3.6', env: TOXENV=py36-django111 }
   - { python: '3.6', env: TOXENV=py36-django20 }
+  - { python: '3.7', env: TOXENV=py37-django20, dist: xenial, sudo: true }
+  - { python: '3.7', env: TOXENV=py37-django111, dist: xenial, sudo: true }
 
   - stage: PyPI Release
     if: tag IS present
