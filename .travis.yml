@@ -46,16 +46,13 @@ before_cache:
 jobs:
   fast_finish: true
   include:
-  - python: '2.7'
-    env: TOXENV=py27-django111
-  - python: '3.6'
-    env: TOXENV=py36-django111
-  - python: '3.6'
-    env: TOXENV=py36-django20
-  - python: '3.6'
-    env: TOXENV=lint
-    before_install: skip
-    before_cache: skip
+  - { python: '3.6', env: TOXENV=lint, before_install: skip, before_cache: skip }
+  - { python: '2.7', env: TOXENV=py27-django111 }
+  - { python: '3.6', env: TOXENV=py36-django111 }
+  - { python: '3.6', env: TOXENV=py36-django20 }
+  - { python: '3.6', env: TOXENV=py36-django111 }
+  - { python: '3.6', env: TOXENV=py36-django20 }
+
   - stage: PyPI Release
     if: tag IS present
     python: "3.6"
