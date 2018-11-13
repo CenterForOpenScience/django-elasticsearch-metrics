@@ -5,7 +5,7 @@ import os
 from setuptools import setup, find_packages
 
 EXTRAS_REQUIRE = {
-    "tests": ["pytest", "mock", "pytest-django==3.4.3", "factory-boy==2.11.1"],
+    "tests": ["pytest", "mock", "pytest-django==3.4.4", "factory-boy==2.11.1"],
     "lint": [
         "flake8==3.6.0",
         'flake8-bugbear==18.8.0; python_version >= "3.5"',
