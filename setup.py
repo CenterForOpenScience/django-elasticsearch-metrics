@@ -48,7 +48,7 @@ setup(
     description="Django app for storing time-series metrics in Elasticsearch.",
     long_description=read("README.md"),
     long_description_content_type="text/markdown",
-    url="http://github.com/sloria/django-elasticsearch-metrics",
+    url="http://github.com/CenterForOpenScience/django-elasticsearch-metrics",
     license="MIT",
     packages=find_packages(exclude=("tests",)),
     keywords=(
@@ -82,7 +82,7 @@ setup(
     zip_safe=False,
     include_package_data=True,
     project_urls={
-        "Issues": "https://github.com/sloria/django-elasticsearch-metrics/issues",
-        "Changelog": "https://github.com/sloria/django-elasticsearch-metrics/blob/master/CHANGELOG.md",
+        "Issues": "https://github.com/CenterForOpenScience/django-elasticsearch-metrics/issues",
+        "Changelog": "https://github.com/CenterForOpenScience/django-elasticsearch-metrics/blob/master/CHANGELOG.md",
     },
 )
