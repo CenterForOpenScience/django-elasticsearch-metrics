@@ -1,5 +1,12 @@
 # Changelog
 
+## 4.0.4 (2018-11-26)
+
+Bug fixes:
+
+* Pin to elasticsearch-dsl>=6.0.0,<6.3.0 because version 6.3.0
+  introduces an incompatiblity.
+
 ## 4.0.3 (2018-10-15)
 
 Bug fixes:
