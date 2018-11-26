@@ -189,18 +189,9 @@ def test_something():
 
 * `sync_metrics`: Ensure that index templates have been created for
     your metrics.
-
-```
-python manage.py sync_metrics
-```
-
 * `show_metrics`: Pretty-print a listing of all registered metrics.
-* `check_metrics`: Check if index templates have been created. Exits
+* `check_metrics`: Check if index templates are in sync. Exits
     with an error code if any metrics are out of sync.
-
-```
-python manage.py show_metrics
-```
 
 <!-- * `clean_metrics` : Clean old data using [curator](https://curator.readthedocs.io/en/latest/). -->
 <!--  -->
