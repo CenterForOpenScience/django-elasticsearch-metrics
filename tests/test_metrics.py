@@ -36,7 +36,7 @@ class TestGetIndexName:
         date = dt.date(2020, 2, 14)
         assert (
             PreprintView.get_index_name(date=date)
-            == "osf_metrics_preprintviews-2020.02.14"
+            == "osf_metrics_preprintviews_2020.02.14"
         )
 
     def test_get_index_name_respects_date_format_setting(self, settings):
@@ -44,13 +44,13 @@ class TestGetIndexName:
         date = dt.date(2020, 2, 14)
         assert (
             PreprintView.get_index_name(date=date)
-            == "osf_metrics_preprintviews-2020-02-14"
+            == "osf_metrics_preprintviews_2020-02-14"
         )
 
     def test_get_index_name_gets_index_for_today_by_default(self):
         today = timezone.now().date()
         today_formatted = today.strftime("%Y.%m.%d")
-        assert PreprintView.get_index_name() == "osf_metrics_preprintviews-{}".format(
+        assert PreprintView.get_index_name() == "osf_metrics_preprintviews_{}".format(
             today_formatted
         )
 
@@ -102,7 +102,7 @@ class TestGetIndexTemplate:
         template = DummyMetric.get_index_template()
         assert isinstance(template, IndexTemplate)
         assert template._template_name == "dummyapp_dummymetric"
-        assert "dummyapp_dummymetric-*" in template.to_dict()["index_patterns"]
+        assert "dummyapp_dummymetric_*" in template.to_dict()["index_patterns"]
 
     def test_get_index_template_uses_app_label_in_class_meta(self):
         class MyMetric(metrics.Metric):
@@ -120,7 +120,7 @@ class TestGetIndexTemplate:
         assert template._template_name == "dummymetric"
         # template is not specified, so it's generated
         assert (
-            "dummyapp_dummymetricwithexplicittemplatename-*"
+            "dummyapp_dummymetricwithexplicittemplatename_*"
             in template.to_dict()["index_patterns"]
         )
 

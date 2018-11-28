@@ -48,7 +48,7 @@ from elasticsearch_metrics import metrics
 
 
 class PageView(metrics.Metric):
-    user_id = metrics.Integer()
+    user_id = metrics.Integer(index=True, doc_values=True)
 ```
 
 Use the `sync_metrics` management command to ensure that the [index template](https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-templates.html)
@@ -68,7 +68,7 @@ user = User.objects.latest()
 
 # By default we create an index for each day.
 # Therefore, this will persist the document
-# to an index called, e.g. "myapp_pageview-2020.02.04"
+# to an index called, e.g. "myapp_pageview_2020.02.04"
 PageView.record(user_id=user.id)
 ```
 
@@ -115,7 +115,7 @@ Each `Metric` will have its own [index template](https://www.elastic.co/guide/en
 The index template name and glob pattern are computed from the app label
 for the containing app and the class's name. For example, a `PageView`
 class defined in `myapp/metrics.py` will have an index template with the
-name `myapp_pageview` and a template glob pattern of `myapp_pageview-*`.
+name `myapp_pageview` and a template glob pattern of `myapp_pageview_*`.
 
 If you declare a `Metric` outside of an app, you will need to set
 `app_label`.
@@ -135,7 +135,7 @@ class PageView(metrics.Metric):
 
     class Meta:
         template_name = "myapp_pviews"
-        template = "myapp_pviews-*"
+        template = "myapp_pviews_*"
 ```
 
 ## Abstract metrics

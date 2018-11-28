@@ -59,7 +59,7 @@ class MetricMeta(IndexMeta):
             if not template_name:
                 template_name = "{}_{}".format(app_label, metric_name)
             # template is <app label>_<lowercased class name>-*
-            template = template or "{}_{}-*".format(app_label, metric_name)
+            template = template or "{}_{}_*".format(app_label, metric_name)
 
         new_cls._template_name = template_name
         new_cls._template = template
@@ -115,7 +115,7 @@ class BaseMetric(object):
         from elasticsearch_metrics import metrics
 
         class PageView(metrics.Metric):
-            user_id = metrics.Integer()
+            user_id = metrics.Integer(index=True, doc_values=True)
 
             class Index:
                 settings = {
@@ -220,7 +220,7 @@ class BaseMetric(object):
             settings, "ELASTICSEARCH_METRICS_DATE_FORMAT", DEFAULT_DATE_FORMAT
         )
         date_formatted = date.strftime(dateformat)
-        return "{}-{}".format(cls._template_name, date_formatted)
+        return "{}_{}".format(cls._template_name, date_formatted)
 
     @classmethod
     def record(cls, timestamp=None, **kwargs):
