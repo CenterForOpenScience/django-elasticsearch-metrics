@@ -1,5 +1,12 @@
 # Changelog
 
+## 5.0.0 (2018-11-28)
+
+Changes:
+
+* *Backwards-incompatible*: Change default template pattern to
+  `<appname>_<metricname>_<date>`.
+
 ## 4.0.4 (2018-11-26)
 
 Bug fixes:
