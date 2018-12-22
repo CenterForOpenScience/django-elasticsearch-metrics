@@ -32,6 +32,7 @@ flake8
 * Run the shell with:
 
 ```
+konch allow
 konch
 ```
 

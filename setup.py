@@ -13,7 +13,7 @@ EXTRAS_REQUIRE = {
     ],
 }
 EXTRAS_REQUIRE["dev"] = (
-    EXTRAS_REQUIRE["tests"] + EXTRAS_REQUIRE["lint"] + ["konch", "tox"]
+    EXTRAS_REQUIRE["tests"] + EXTRAS_REQUIRE["lint"] + ["konch>=3.0.0", "tox"]
 )
 
 
