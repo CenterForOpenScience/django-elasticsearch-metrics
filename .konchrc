@@ -46,3 +46,7 @@ def setup():
     context["client"] = connections.get_connection()
     context["Metric"] = Metric
     konch.config({"context": context})
+
+
+if os.path.exists(".konchrc.local"):
+    konch.use_file(".konchrc.local", trust=True)

@@ -64,3 +64,4 @@ celerybeat-schedule
 .env
 
 !.konchrc
+.konchrc.local
