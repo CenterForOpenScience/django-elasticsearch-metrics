@@ -1,7 +1,7 @@
 from django.apps import apps
 from django.conf import settings
 from django.utils import timezone
-from django.utils.six import add_metaclass
+from six import add_metaclass
 from elasticsearch.exceptions import NotFoundError
 from elasticsearch_dsl import Document, connections, Index
 from elasticsearch_dsl.document import IndexMeta, MetaField
