@@ -2,6 +2,14 @@ version: '3'
 services:
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:6.3.1
-    ports:
-      # Prevent clashing with another running cluster
-      - 9201:9200
+  testbox:
+    build:
+      context: .
+      dockerfile: testbox.Dockerfile
+    depends_on:
+      - elasticsearch
+    environment:
+      TOXENV: py37-django20
+      ELASTICSEARCH_HOST: elasticsearch:9200
+    volumes:
+      - ./:/code:cached
