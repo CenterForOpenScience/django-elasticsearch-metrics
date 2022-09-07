@@ -7,9 +7,9 @@ from setuptools import setup, find_packages
 EXTRAS_REQUIRE = {
     "tests": ["pytest", "mock", "pytest-django==3.10.0", "factory-boy==2.11.1"],
     "lint": [
-        "flake8==3.6.0",
+        "flake8==5.0.4",
         'flake8-bugbear==18.8.0; python_version >= "3.5"',
-        "pre-commit==1.14.2",
+        "pre-commit==2.17.0",
     ],
 }
 EXTRAS_REQUIRE["dev"] = (

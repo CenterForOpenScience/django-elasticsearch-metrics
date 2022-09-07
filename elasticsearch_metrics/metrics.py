@@ -23,21 +23,17 @@ logger = logging.getLogger(__name__)
 
 
 class ReadonlyAttrMap:
-    def __init__(self, inner_obj, attr_prefix=None):
+    def __init__(self, inner_obj):
         self.__inner_obj = inner_obj
-        self.__attr_prefix = attr_prefix
-
-    def __to_attr(self, key):
-        return f"{self.__attr_prefix}{key}" if self.__attr_prefix else key
 
     def __getitem__(self, key):
         try:
-            return getattr(self.__inner_obj, self.__to_attr(key))
-        except AttributeError:
-            raise KeyError(key)
+            return getattr(self.__inner_obj, key)
+        except AttributeError as e:
+            raise KeyError(key) from e
 
     def __contains__(self, key):
-        return hasattr(self.__inner_obj, self.__to_attr(key))
+        return hasattr(self.__inner_obj, key)
 
 
 class MetricMeta(IndexMeta):
@@ -126,6 +122,7 @@ class BaseMetric(metaclass=MetricMeta):
 
         from elasticsearch_metrics import metrics
 
+
         class PageView(metrics.Metric):
             user_id = metrics.Integer(index=True, doc_values=True)
 
@@ -174,7 +171,7 @@ class BaseMetric(metaclass=MetricMeta):
             raise exceptions.IndexTemplateNotFoundError(
                 "{template_name} does not exist for {metric_name}".format(**locals()),
                 client_error=client_error,
-            )
+            ) from client_error
         else:
             current_data = list(template.values())[0]
             template_data = cls.get_index_template().to_dict()
