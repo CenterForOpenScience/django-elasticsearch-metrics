@@ -18,7 +18,8 @@ jobs:
         with:
           python-version: '3.6'
       - run: pip install -U tox
-      - run: alias python${{ steps.setup-py.outputs.python-version }}=${{ steps.setup-py.outputs.python-path }}
+      - name: alias pythonX.Y for tox
+        run: alias python${{ steps.setup-py.outputs.python-version }}=${{ steps.setup-py.outputs.python-path }}
       - run: TOXENV=lint tox
 
 
