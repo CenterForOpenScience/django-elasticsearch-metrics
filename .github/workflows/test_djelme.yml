@@ -1,0 +1,40 @@
+name: test_djelme
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  checks: write
+
+jobs:
+  tox_it:
+    strategy:
+      matrix:
+        include:
+          - { python: '3.6', toxenv: 'lint' }
+          - { python: '2.7', toxenv: 'py27-django111' }
+          - { python: '3.6', toxenv: 'py36-django111' }
+          - { python: '3.6', toxenv: 'py36-django20' }
+          - { python: '3.6', toxenv: 'py36-django111' }
+          - { python: '3.6', toxenv: 'py36-django20' }
+          - { python: '3.7', toxenv: 'py37-django20' }
+          - { python: '3.7', toxenv: 'py37-django111' }
+            # TODO: recent versions!
+    runs-on: ubuntu-latest
+    services:
+      elasticsearch:
+        image: elasticsearch:6.8.23
+        ports:
+          - 9201:9200
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        id: setup-py
+        with:
+          python-version: ${{ matrix.python }}
+      - run: pip install -U tox
+      - run: alias python${{ steps.setup-py.outputs.python-version }}=${{ steps.setup-py.outputs.python-path }}
+      - run: TOXENV=${{ matrix.toxenv }} tox
+
