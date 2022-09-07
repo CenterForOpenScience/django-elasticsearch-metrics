@@ -1,5 +1,11 @@
 # Changelog
 
+## 2022.0.0 (2022-09-07)
+
+Switch to calendar-year major version numbers
+
+* Fix elasticsearch-dsl 6.3.0 incompatibility?
+
 ## 5.0.0 (2018-11-28)
 
 Changes:
