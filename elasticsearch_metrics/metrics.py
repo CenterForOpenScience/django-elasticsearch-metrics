@@ -1,7 +1,6 @@
 from django.apps import apps
 from django.conf import settings
 from django.utils import timezone
-from django.utils.six import add_metaclass
 from elasticsearch.exceptions import NotFoundError
 from elasticsearch_dsl import Document, connections, Index
 from elasticsearch_dsl.document import IndexMeta, MetaField
@@ -104,8 +103,7 @@ class MetricMeta(IndexMeta):
 
 # We need this intermediate BaseMetric class so that
 # we can run MetricMeta ahead of IndexMeta
-@add_metaclass(MetricMeta)
-class BaseMetric(object):
+class BaseMetric(metaclass=MetricMeta):
     """Base metric class with which to define custom metric classes.
 
     Example usage:
