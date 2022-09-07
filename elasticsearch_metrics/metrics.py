@@ -1,10 +1,13 @@
+from collections import ChainMap
+import logging
+
 from django.apps import apps
 from django.conf import settings
 from django.utils import timezone
 from elasticsearch.exceptions import NotFoundError
-from elasticsearch_dsl import Document, connections, Index
+from elasticsearch_dsl import Document, connections
 from elasticsearch_dsl.document import IndexMeta, MetaField
-from elasticsearch_dsl.index import DEFAULT_INDEX
+from elasticsearch_dsl.index import Index
 
 from elasticsearch_metrics import signals
 from elasticsearch_metrics import exceptions
@@ -15,6 +18,26 @@ from elasticsearch_metrics.field import *  # noqa: F40
 from elasticsearch_metrics.field import Date
 
 DEFAULT_DATE_FORMAT = "%Y.%m.%d"
+
+logger = logging.getLogger(__name__)
+
+
+class ReadonlyAttrMap:
+    def __init__(self, inner_obj, attr_prefix=None):
+        self.__inner_obj = inner_obj
+        self.__attr_prefix = attr_prefix
+
+    def __to_attr(self, key):
+        return f"{self.__attr_prefix}{key}" if self.__attr_prefix else key
+
+    def __getitem__(self, key):
+        try:
+            return getattr(self.__inner_obj, self.__to_attr(key))
+        except AttributeError:
+            raise KeyError(key)
+
+    def __contains__(self, key):
+        return hasattr(self.__inner_obj, self.__to_attr(key))
 
 
 class MetricMeta(IndexMeta):
@@ -70,33 +93,24 @@ class MetricMeta(IndexMeta):
 
     # Override IndexMeta.construct_index so that
     # a new Index is created for every metric class
+    # and Index attrs are inherited
     @classmethod
     def construct_index(cls, opts, bases):
-        i = None
-        if opts is None:
-            # Inherit Index from base classes
-            for b in bases:
-                if getattr(b, "_index", DEFAULT_INDEX) is not DEFAULT_INDEX:
-                    parent_index = b._index
-                    i = Index(
-                        parent_index._name,
-                        doc_type=parent_index._mapping.doc_type,
-                        using=parent_index._using,
-                    )
-                    i._settings = parent_index._settings.copy()
-                    i._aliases = parent_index._aliases.copy()
-                    i._analysis = parent_index._analysis.copy()
-                    i._doc_types = parent_index._doc_types[:]
-                    break
-        if i is None:
-            i = Index(
-                getattr(opts, "name", "*"),
-                doc_type=getattr(opts, "doc_type", "doc"),
-                using=getattr(opts, "using", "default"),
-            )
-        i.settings(**getattr(opts, "settings", {}))
-        i.aliases(**getattr(opts, "aliases", {}))
-        for a in getattr(opts, "analyzers", ()):
+        parent_configs = [
+            base._index.to_dict() for base in bases if hasattr(base, "_index")
+        ]
+        if opts:
+            index_config = ChainMap(ReadonlyAttrMap(opts), *parent_configs)
+        else:
+            index_config = ChainMap(*parent_configs)
+
+        i = Index(
+            index_config.get("name", "*"),
+            using=index_config.get("using", "default"),
+        )
+        i.settings(**index_config.get("settings", {}))
+        i.aliases(**index_config.get("aliases", {}))
+        for a in index_config.get("analyzers", ()):
             i.analyzer(a)
         return i
 

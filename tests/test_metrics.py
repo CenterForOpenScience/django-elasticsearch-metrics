@@ -113,7 +113,7 @@ class TestGetIndexTemplate:
         assert template._template_name == "myapp_mymetric"
 
     def test_template_name_defined_with_no_template_falls_back_to_default_template(
-        self
+        self,
     ):
         template = DummyMetricWithExplicitTemplateName.get_index_template()
         # template name specified in class Meta

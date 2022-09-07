@@ -1,11 +1,17 @@
 import mock
 import pytest
 
+from django.conf import settings
 from elasticsearch_dsl import connections
 
 
+@pytest.fixture(scope="session")
+def es_setup():
+    connections.configure(**settings.ELASTICSEARCH_DSL)
+
+
 @pytest.fixture(scope="function")
-def client():
+def client(es_setup):
     return connections.get_connection()
 
 
