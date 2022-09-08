@@ -3,7 +3,11 @@ import pytest
 import datetime as dt
 from django.utils import timezone
 from elasticsearch_metrics import metrics
-from elasticsearch_dsl import IndexTemplate
+from elasticsearch_dsl import (
+    IndexTemplate,
+    analyzer,
+    tokenizer,
+)
 
 from elasticsearch_metrics import signals
 from elasticsearch_metrics.exceptions import (
@@ -17,10 +21,17 @@ from tests.dummyapp.metrics import (
 )
 
 
+route_prefix_analyzer = analyzer(
+    'route_prefix_analyzer',
+    tokenizer=tokenizer('route_prefix_tokenizer', 'path_hierarchy', delimiter='.'),
+)
+
+
 class PreprintView(metrics.Metric):
     provider_id = metrics.Keyword(index=True)
     user_id = metrics.Keyword(index=True)
     preprint_id = metrics.Keyword(index=True)
+    route_name = metrics.Text(analyzer=route_prefix_analyzer)
 
     class Index:
         settings = {"refresh_interval": "-1"}
@@ -64,7 +75,23 @@ class TestGetIndexTemplate:
 
     def test_get_index_template_respects_index_settings(self):
         template = PreprintView.get_index_template()
-        assert template._index.to_dict()["settings"] == {"refresh_interval": "-1"}
+        assert template._index.to_dict()["settings"] == {
+            "refresh_interval": "-1",
+            "analysis": {
+                "analyzer": {
+                    "route_prefix_analyzer": {
+                        "tokenizer": "route_prefix_tokenizer",
+                        "type": "custom",
+                    },
+                },
+                "tokenizer": {
+                    "route_prefix_tokenizer": {
+                        "delimiter": ".",
+                        "type": "path_hierarchy",
+                    },
+                },
+            },
+        }
 
     def test_get_index_template_creates_template_with_mapping(self):
         template = PreprintView.get_index_template()
