@@ -1,7 +1,6 @@
 # django-elasticsearch-metrics
 
 [![pypi](https://badge.fury.io/py/django-elasticsearch-metrics.svg)](https://badge.fury.io/py/django-elasticsearch-metrics)
-[![Build Status](https://travis-ci.org/CenterForOpenScience/django-elasticsearch-metrics.svg?branch=master)](https://travis-ci.org/CenterForOpenScience/django-elasticsearch-metrics)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black)
 
 Django app for storing time-series metrics in Elasticsearch.
