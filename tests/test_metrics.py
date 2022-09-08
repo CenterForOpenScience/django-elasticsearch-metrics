@@ -22,8 +22,8 @@ from tests.dummyapp.metrics import (
 
 
 route_prefix_analyzer = analyzer(
-    'route_prefix_analyzer',
-    tokenizer=tokenizer('route_prefix_tokenizer', 'path_hierarchy', delimiter='.'),
+    "route_prefix_analyzer",
+    tokenizer=tokenizer("route_prefix_tokenizer", "path_hierarchy", delimiter="."),
 )
 
 
