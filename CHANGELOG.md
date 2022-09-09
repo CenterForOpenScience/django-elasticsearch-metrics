@@ -1,5 +1,14 @@
 # Changelog
 
+## 2022.0.6 (2022-09-09)
+
+Changes:
+* replace travisci with github actions
+* fix incompatibility with elasticsearch-dsl>=6.3, update to 6.3+
+* test on pythons 3.6 thru 3.10, djangoes from 1.11 to 4.1
+* various fixes to pass tests
+
+
 ## 5.0.0 (2018-11-28)
 
 Changes:
