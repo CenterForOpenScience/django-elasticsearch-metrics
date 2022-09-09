@@ -19,7 +19,7 @@ def _es_marker(request, client):
 
         def teardown_es():
             client.indices.delete(index="*")
-            client.indices.delete_template("*")
+            client.indices.delete_template(name="*")
 
         teardown_es()
         yield

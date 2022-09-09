@@ -27,6 +27,11 @@ route_prefix_analyzer = analyzer(
 )
 
 
+# support elasticsearch-dsl 6 and 7
+def mappings_fortytwo(mapping):
+    return mapping.get("doc", mapping)
+
+
 class PreprintView(metrics.Metric):
     provider_id = metrics.Keyword(index=True)
     user_id = metrics.Keyword(index=True)
@@ -95,9 +100,9 @@ class TestGetIndexTemplate:
 
     def test_get_index_template_creates_template_with_mapping(self):
         template = PreprintView.get_index_template()
-        mappings = template.to_dict()["mappings"]
-        assert mappings["doc"]["_source"]["enabled"] is False
-        properties = mappings["doc"]["properties"]
+        mappings = mappings_fortytwo(template.to_dict()["mappings"])
+        assert mappings["_source"]["enabled"] is False
+        properties = mappings["properties"]
         assert "timestamp" in properties
         assert properties["timestamp"] == {"doc_values": True, "type": "date"}
         assert properties["provider_id"] == {"type": "keyword", "index": True}
@@ -108,10 +113,12 @@ class TestGetIndexTemplate:
     def test_mappings_are_not_shared(self):
         template1 = DummyMetric.get_index_template()
         template2 = DummyMetricWithExplicitTemplateName.get_index_template()
-        assert "my_int" in template1.to_dict()["mappings"]["doc"]["properties"]
-        assert "my_keyword" not in template1.to_dict()["mappings"]["doc"]["properties"]
-        assert "my_int" not in template2.to_dict()["mappings"]["doc"]["properties"]
-        assert "my_keyword" in template2.to_dict()["mappings"]["doc"]["properties"]
+        mappings1 = mappings_fortytwo(template1.to_dict()["mappings"])
+        mappings2 = mappings_fortytwo(template2.to_dict()["mappings"])
+        assert "my_int" in mappings1["properties"]
+        assert "my_keyword" not in mappings1["properties"]
+        assert "my_int" not in mappings2["properties"]
+        assert "my_keyword" in mappings2["properties"]
 
     def test_declaring_metric_with_no_app_label_or_template_name_errors(self):
         with pytest.raises(RuntimeError):
@@ -189,8 +196,8 @@ class TestGetIndexTemplate:
         template = MyMetric.get_index_template()
 
         template_dict = template.to_dict()
-        doc = template_dict["mappings"]["doc"]
-        assert doc["_source"]["enabled"] is True
+        mappings = mappings_fortytwo(template_dict["mappings"])
+        assert mappings["_source"]["enabled"] is True
 
 
 class TestRecord:
@@ -264,7 +271,7 @@ class TestIntegration:
         PreprintView.init()
         name = PreprintView.get_index_name()
         mapping = client.indices.get_mapping(index=name)
-        properties = mapping[name]["mappings"]["doc"]["properties"]
+        properties = mappings_fortytwo(mapping[name]["mappings"])["properties"]
         assert properties["timestamp"] == {"type": "date"}
         assert properties["provider_id"] == {"type": "keyword"}
         assert properties["user_id"] == {"type": "keyword"}

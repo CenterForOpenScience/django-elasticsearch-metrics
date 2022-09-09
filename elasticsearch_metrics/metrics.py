@@ -164,7 +164,7 @@ class BaseMetric(metaclass=MetricMeta):
         """
         client = connections.get_connection(using or "default")
         try:
-            template = client.indices.get_template(cls._template_name)
+            template = client.indices.get_template(name=cls._template_name)
         except NotFoundError as client_error:
             template_name = cls._template_name
             metric_name = cls.__name__
