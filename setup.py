@@ -5,11 +5,11 @@ import os
 from setuptools import setup, find_packages
 
 EXTRAS_REQUIRE = {
-    "tests": ["pytest", "mock", "pytest-django==3.4.5", "factory-boy==2.11.1"],
+    "tests": ["pytest", "mock", "pytest-django==3.10.0", "factory-boy==2.11.1"],
     "lint": [
-        "flake8==3.6.0",
+        "flake8==5.0.4",
         'flake8-bugbear==18.8.0; python_version >= "3.5"',
-        "pre-commit==1.14.2",
+        "pre-commit==2.17.0",
     ],
 }
 EXTRAS_REQUIRE["dev"] = (
@@ -60,20 +60,28 @@ setup(
         "metrics",
         "statistics",
     ),
-    install_requires=["elasticsearch-dsl>=6.0.0,<6.3.0"],
+    install_requires=["elasticsearch-dsl>=6.3.0,<7.0.0"],
     extras_require=EXTRAS_REQUIRE,
     classifiers=[
         "Operating System :: OS Independent",
         "Programming Language :: Python",
-        "Programming Language :: Python :: 2",
-        "Programming Language :: Python :: 2.7",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.5",
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
         "Framework :: Django",
         "Framework :: Django :: 1.11",
         "Framework :: Django :: 2.0",
+        "Framework :: Django :: 2.1",
+        "Framework :: Django :: 2.2",
+        "Framework :: Django :: 3.0",
+        "Framework :: Django :: 3.1",
+        "Framework :: Django :: 3.2",
+        "Framework :: Django :: 4.0",
+        "Framework :: Django :: 4.1",
         "Environment :: Web Environment",
         "Intended Audience :: Developers",
         "Topic :: Internet :: WWW/HTTP",

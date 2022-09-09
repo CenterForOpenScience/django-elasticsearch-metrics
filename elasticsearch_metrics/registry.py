@@ -48,10 +48,10 @@ class Registry(object):
         app_metrics = self._get_metrics_for_app(app_label=app_label)
         try:
             return app_metrics[metric_name.lower()]
-        except KeyError:
+        except KeyError as e:
             raise LookupError(
                 "App '{}' doesn't have a '{}' metric.".format(app_label, metric_name)
-            )
+            ) from e
 
     def get_metrics(self, app_label=None):
         """Return list of registered metric classes, optionally filtered on an app_label."""
