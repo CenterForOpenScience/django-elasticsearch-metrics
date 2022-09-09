@@ -1,0 +1,80 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "django-elasticsearch-metrics"
+description="Django app for storing time-series metrics in Elasticsearch."
+requires-python = ">=3.7"
+license = { file = "LICENSE" }
+readme = "README.md"
+dependencies = [
+    "elasticsearch-dsl>=6.3,<7",
+]
+keywords = [
+    "django",
+    "elastic",
+    "elasticsearch",
+    "elasticsearch-dsl",
+    "time-series",
+    "metrics",
+    "statistics",
+]
+classifiers = [
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Framework :: Django",
+    "Framework :: Django :: 1.11",
+    "Framework :: Django :: 2.0",
+    "Framework :: Django :: 2.1",
+    "Framework :: Django :: 2.2",
+    "Framework :: Django :: 3.0",
+    "Framework :: Django :: 3.1",
+    "Framework :: Django :: 3.2",
+    "Framework :: Django :: 4.0",
+    "Framework :: Django :: 4.1",
+    "Environment :: Web Environment",
+    "Intended Audience :: Developers",
+    "Topic :: Internet :: WWW/HTTP",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+authors = [
+    { name = "Steven Loria", email = "steve@cos.io" },
+    { name = "Dawn Pattison", email = "pattison.dawn@cos.io" },
+]
+maintainers = [
+    { name = "Abram Booth", email = "abram@cos.io" },
+]
+dynamic = ["version"]
+
+[project.urls]
+Issues = "https://github.com/CenterForOpenScience/django-elasticsearch-metrics/issues"
+Changelog = "https://github.com/CenterForOpenScience/django-elasticsearch-metrics/blob/master/CHANGELOG.md"
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "mock",
+    "pytest-django==3.10.0",
+    "factory-boy==2.11.1",
+    "flake8==5.0.4",
+    "flake8-bugbear==18.8.0",
+    "pre-commit==2.17.0",
+    "konch>=3.0",
+    "tox",
+]
+
+[tool.setuptools.dynamic]
+version = { attr = "elasticsearch_metrics.__version__" }
+
+[tool.setuptools.packages.find]
+exclude = ["tests*"]
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "tests.settings"
+addopts = "-v --tb=short"
