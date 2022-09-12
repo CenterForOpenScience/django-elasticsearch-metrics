@@ -11,10 +11,13 @@ permissions:
 jobs:
   lint:
     runs-on: ubuntu-latest
-    container: python:3.7-slim
     steps:
       - uses: actions/checkout@v3
-      - run: pip install tox
+      - uses: actions/setup-python@v4
+        with:
+          python-version: 3.9  # must match language_version in .pre-commit-config.yaml
+      - run: alias python${{ steps.setup-py.outputs.python-version }}=${{ steps.setup-py.outputs.python-path }}
+      - run: pip install -U tox
       - run: TOXENV=lint tox
 
 
