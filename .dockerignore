@@ -1,0 +1,6 @@
+.git
+*tests
+**/tests
+*.pyc
+**/*.pyc
+docker*
