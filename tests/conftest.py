@@ -1,7 +1,7 @@
 import mock
 import pytest
 
-from elasticsearch_dsl import connections
+from elasticsearch6_dsl import connections
 
 
 @pytest.fixture(scope="function")

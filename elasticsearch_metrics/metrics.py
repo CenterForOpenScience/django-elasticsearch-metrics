@@ -5,9 +5,9 @@ from django.apps import apps
 from django.conf import settings
 from django.utils import timezone
 from elasticsearch.exceptions import NotFoundError
-from elasticsearch_dsl import Document, connections
-from elasticsearch_dsl.document import IndexMeta, MetaField
-from elasticsearch_dsl.index import Index
+from elasticsearch6_dsl import Document, connections
+from elasticsearch6_dsl.document import IndexMeta, MetaField
+from elasticsearch6_dsl.index import Index
 
 from elasticsearch_metrics import signals
 from elasticsearch_metrics import exceptions
