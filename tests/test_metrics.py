@@ -3,7 +3,7 @@ import pytest
 import datetime as dt
 from django.utils import timezone
 from elasticsearch_metrics import metrics
-from elasticsearch_dsl import (
+from elasticsearch6_dsl import (
     IndexTemplate,
     analyzer,
     tokenizer,
