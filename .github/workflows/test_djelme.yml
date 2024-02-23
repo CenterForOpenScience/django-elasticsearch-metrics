@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   lint:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v4
@@ -36,7 +36,7 @@ jobs:
           - {python: '3.7', django: '4.1'}
           - {python: '3.10', django: '1.11'}
           - {python: '3.10', django: '2.0'}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     services:
       elasticsearch:
         image: elasticsearch:6.8.23
