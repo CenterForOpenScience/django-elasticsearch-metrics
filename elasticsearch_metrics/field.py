@@ -1,5 +1,5 @@
 from django.conf import settings
-from elasticsearch_dsl import field as edsl_field
+from elasticsearch6_dsl import field as edsl_field
 
 __all__ = ["Date"]
 # Expose all fields from elasticsearch_dsl.field
