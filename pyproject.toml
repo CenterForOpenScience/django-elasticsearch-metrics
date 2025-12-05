@@ -1,0 +1,88 @@
+[project]
+name = "django-elasticsearch-metrics"
+version = "2022.0.6"
+description = "Django app for storing time-series metrics in Elasticsearch."
+authors = [
+    {name = "CenterForOpenScience", email = "support@cos.io"}
+]
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.10"
+keywords = [
+    "django",
+    "elastic",
+    "elasticsearch",
+    "elasticsearch-dsl",
+    "time-series",
+    "metrics",
+    "statistics",
+]
+classifiers = [
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.5",
+    "Programming Language :: Python :: 3.6",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Framework :: Django",
+    "Framework :: Django :: 1.11",
+    "Framework :: Django :: 2.0",
+    "Framework :: Django :: 2.1",
+    "Framework :: Django :: 2.2",
+    "Framework :: Django :: 3.0",
+    "Framework :: Django :: 3.1",
+    "Framework :: Django :: 3.2",
+    "Framework :: Django :: 4.0",
+    "Framework :: Django :: 4.1",
+    "Environment :: Web Environment",
+    "Intended Audience :: Developers",
+    "Topic :: Internet :: WWW/HTTP",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+dependencies = [
+    "elasticsearch6-dsl>=6.3.0,<7.0.0",
+]
+
+[project.urls]
+repository = "http://github.com/CenterForOpenScience/django-elasticsearch-metrics"
+changelog = "https://github.com/CenterForOpenScience/django-elasticsearch-metrics/blob/master/CHANGELOG.md"
+
+[dependency-groups]
+tests = [
+    "pytest",
+    "mock",
+    "pytest-django==3.10.0",
+    "factory-boy==2.11.1",
+]
+lint = [
+    "flake8==5.0.4",
+    'flake8-bugbear==18.8.0; python_version >= "3.5"',
+    "pre-commit==2.17.0",
+]
+dev = [
+    { include-group = "tests" },
+    { include-group = "lint" },
+    "konch>=3.0.0",
+    "tox",
+]
+
+[tool.poetry.group.tests]
+optional = true
+
+[tool.poetry.group.lint]
+optional = true
+
+[tool.poetry.group.dev]
+optional = true
+
+[tool.poetry]
+packages = [
+    { include = "elasticsearch_metrics" }
+]
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"

@@ -9,7 +9,7 @@ services:
     depends_on:
       - elasticsearch
     environment:
-      TOXENV: py39-django40
+      TOXENV: py310-django41
       ELASTICSEARCH_HOST: elasticsearch:9200
     volumes:
       - ./:/code:cached

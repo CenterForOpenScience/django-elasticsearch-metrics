@@ -1,9 +1,10 @@
-FROM python:3.9-slim as testbox
+FROM python:3.10-slim as testbox
+
+RUN pip install poetry==2.2.1
 
 RUN mkdir -p /code
 WORKDIR /code
 COPY ./ /code
+RUN poetry install --with dev
 
-RUN pip install .[dev]
-
-CMD ["tox"]
+CMD ["poetry", "run", "tox"]

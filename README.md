@@ -7,8 +7,8 @@ Django app for storing time-series metrics in Elasticsearch.
 
 ## Pre-requisites
 
-* Python 2.7 or >=3.6
-* Django 1.11 or 2.0
+* Python >=3.10
+* Django 4.2, 5.1, or 5.2
 * Elasticsearch 6
 
 ## Install
