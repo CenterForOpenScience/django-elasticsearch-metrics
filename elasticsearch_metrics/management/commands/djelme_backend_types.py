@@ -21,9 +21,7 @@ class Command(BaseCommand):
         else:
             app_labels = list(djelme_registry.each_app_label())
         for app_label in app_labels:
-            self.stdout.write(
-                "Recordtypes for '{}':".format(app_label), style.MIGRATE_HEADING
-            )
+            self.stdout.write(f"Recordtypes for '{app_label}':", style.MIGRATE_HEADING)
             for _recordtype in djelme_registry.each_recordtype(app_label=app_label):
                 _recordtype_name = style.TYPENAME(_recordtype.__name__)
                 self.stdout.write(f"{app_label}.{_recordtype_name}")

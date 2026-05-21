@@ -25,7 +25,7 @@ class Command(BaseCommand):
         )
         for _app_label in _app_labels:
             self.stdout.write(
-                "Syncing recordtypes for app: '{}'".format(_app_label),
+                f"Syncing recordtypes for app: '{_app_label}'",
                 style.MIGRATE_HEADING,
             )
             try:

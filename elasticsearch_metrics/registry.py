@@ -79,12 +79,8 @@ class _DjelmeRegistry:
         if recordtype_name in app_recordtypes:
             # Raise an error for conflicting recordtype names (same behavior as apps.register_model)
             raise RuntimeError(
-                "Conflicting '{}' recordtypes in application '{}': {} and {}.".format(
-                    recordtype_name,
-                    _app_label,
-                    app_recordtypes[recordtype_name],
-                    recordtype,
-                )
+                f"Conflicting '{recordtype_name}' recordtypes in application "
+                f"'{_app_label}': {app_recordtypes[recordtype_name]} and {recordtype}."
             )
         app_recordtypes[recordtype_name] = recordtype
         self._imp_by_recordtype[recordtype] = imp_module_name
@@ -117,9 +113,7 @@ class _DjelmeRegistry:
             return app_recordtypes[format_namepart(recordtype_name)]
         except KeyError as e:
             raise LookupError(
-                "App '{}' doesn't have a '{}' metric.".format(
-                    app_label, recordtype_name
-                )
+                f"App '{app_label}' doesn't have a '{recordtype_name}' metric."
             ) from e
 
     def get_recordtype_app_label(self, recordtype: type) -> str | None:
@@ -181,8 +175,7 @@ class _DjelmeRegistry:
         apps.check_apps_ready()  # ensure django setup done
         _app_labels = [app_label] if app_label else self._all_recordtypes.keys()
         for _app_label in _app_labels:
-            for _recordtype in self._get_recordtypes_for_app(_app_label).values():
-                yield _recordtype
+            yield from self._get_recordtypes_for_app(_app_label).values()
 
     def each_backend_settings(
         self,
@@ -246,9 +239,7 @@ class _DjelmeRegistry:
         self, app_label: str
     ) -> collections.abc.Mapping[str, type]:
         if app_label not in self._all_recordtypes:
-            raise LookupError(
-                "No recordtypes found in app with label '{}'.".format(app_label)
-            )
+            raise LookupError(f"No recordtypes found in app with label '{app_label}'.")
         return self._all_recordtypes[app_label]
 
 

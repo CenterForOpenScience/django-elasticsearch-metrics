@@ -36,11 +36,11 @@ class Command(BaseCommand):
 
         if out_of_sync_count:
             self.stdout.write(
-                "{} index template(s) not set up.".format(out_of_sync_count),
+                f"{out_of_sync_count} index template(s) not set up.",
                 style.ERROR,
             )
             cmd = colorize("python manage.py djelme_backend_setup", opts=("bold",))
-            self.stdout.write("Run {cmd} to set up index templates.".format(cmd=cmd))
+            self.stdout.write(f"Run {cmd} to set up index templates.")
             raise CommandError(1)
         else:
             self.stdout.write("All djelme recordtypes set up.", style.SUCCESS)
