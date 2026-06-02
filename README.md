@@ -46,14 +46,13 @@ DJELME_BACKENDS = {
 
 In one of your apps, add record types in `metrics.py`
 
-
 ```python
 # myapp/metrics.py
 
 from elasticsearch_metrics.imps.elastic8 import EventRecord
 
 
-class UsageRecord(EventRecord):
+class UsageEvent(EventRecord):
     item_id: int
 
     class Index:
@@ -69,24 +68,24 @@ python manage.py djelme_backend_setup
 Now add some data:
 
 ```python
-from myapp.metrics import UsageRecord
+from myapp.metrics import UsageEvent
 
 # By default we create an index for each day.
 # Therefore, this will persist the document
 # to an index named for the record type and date
-UsageRecord.record(item_id='my.item.id')
+UsageEvent.record(item_id='my.item.id')
 ```
 
 Go forth and search!
 
 ```python
 # get an instance of `elasticsearch8.dsl.Search` that queries all timeseries indexes of this type:
-UsageRecord.search()
+UsageEvent.search()
 
 # or get a `Search` for a given time range (from_when <= timestamp < until_when)
-UsageRecord.search_timeseries_range((1999,), (2001,))  # in or after 1999; before 2001
-UsageRecord.search_timeseries_range((2050, 12), (2051,))  # in 2050-12
-UsageRecord.search_timeseries_range(datetime.date(2030, 1, 1), datetime.date(2030, 2, 1))  # in 2030-01
+UsageEvent.search_timeseries_range((1999,), (2001,))  # in or after 1999; before 2001
+UsageEvent.search_timeseries_range((2050, 12), (2051,))  # in 2050-12
+UsageEvent.search_timeseries_range(datetime.date(2030, 1, 1), datetime.date(2030, 2, 1))  # in 2030-01
 ```
 
 ## Timeseries indexes
@@ -113,7 +112,7 @@ You can configure the index settings that will be set on the index template
 and used for each new timeseries index with `Index.settings` on a record type.
 
 ```python
-class UsageRecord(EventRecord):
+class UsageEvent(EventRecord):
     item_id: int
 
     class Index:
@@ -124,7 +123,7 @@ class UsageRecord(EventRecord):
 
 Each record type will have its own [index template](https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-templates.html).
 The index template name and glob pattern are computed from the app label
-for the containing app and the class's name. For example, a `UsageRecord`
+for the containing app and the class's name. For example, a `UsageEvent`
 class defined in `myapp/metrics.py` will have an index template with the
 name `myapp_usagerecord` and a template glob pattern of `myapp_usagerecord_*`.
 
@@ -132,7 +131,7 @@ If you declare a record type outside of an app, you will need to set `app_label`
 
 
 ```python
-class UsageRecord(EventRecord):
+class UsageEvent(EventRecord):
     class Meta:
         app_label = "myapp"
 ```
@@ -140,7 +139,7 @@ class UsageRecord(EventRecord):
 Alternatively, you can set `template_name` and/or `template` explicitly.
 
 ```python
-class UsageRecord(EventRecord):
+class UsageEvent(EventRecord):
     item_id: int
 
     class Meta:
@@ -161,7 +160,7 @@ class MyBaseMetric(EventRecord):
         abstract = True
 
 
-class UsageRecord(MyBaseMetric):
+class UsageEvent(MyBaseMetric):
     class Meta:
         app_label = "myapp"
 ```
@@ -200,11 +199,12 @@ class UsageRecord(MyBaseMetric):
 * `djelme_backend_setup`: Ensure that index templates have been created for your record types.
 * `djelme_backend_check`: Check if index templates are in sync. Exits
     with an error code if any templates are out of sync.
+* `djelme_indexes`: Inspect existing indexes and (with` --delete-expired`) delete expired indexes
 
 <!-- * `clean_metrics` : Clean old data using [curator](https://curator.readthedocs.io/en/latest/). -->
 <!--  -->
 <!-- ``` -->
-<!-- python manage.py clean_metrics myapp.UsageRecord --older-than 45 --time-unit days -->
+<!-- python manage.py clean_metrics myapp.UsageEvent --older-than 45 --time-unit days -->
 <!-- ``` -->
 
 ## Signals
@@ -219,20 +219,6 @@ Signals are located in the `elasticsearch_metrics.signals` module.
     Metric's `save()` method.
 * `post_save(Metric, instance, using, index)`: Sent at the end of a
     Metric's `save()` method.
-
-## Caveats
-
-* `_source` is disabled by default on metric indices in order to save
-    disk space. For most metrics use cases, Users will not need to retrieve the source
-    JSON documents. Be sure to understand the consequences of
-    this: https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-source-field.html#_disabling_source .
-    To enable `_source`, you can override it in `class Meta`.
-
-```python
-class MyMetric(EventRecord):
-    class Meta:
-        source = metrics.MetaField(enabled=True)
-```
 
 ## Resources
 
