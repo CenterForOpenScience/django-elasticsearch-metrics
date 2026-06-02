@@ -44,3 +44,7 @@ class TestCheckRecordtypes(SimpleDjelmeTestCase):
             + self.mock8_simple_check_djelme_setup.call_count
         )
         assert _call_count == len(list(registry.each_recordtype()))
+
+    def test_with_invalid_app(self):
+        with self.assertRaises(LookupError):
+            self.run_mgmt_command(djelme_backend_check, "notanapp")

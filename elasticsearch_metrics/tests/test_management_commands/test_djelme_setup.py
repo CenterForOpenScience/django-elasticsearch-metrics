@@ -1,7 +1,5 @@
 import unittest
 
-from django.core.management import CommandError
-
 from elasticsearch_metrics.imps import elastic8
 from elasticsearch_metrics.management.commands import djelme_backend_setup
 from elasticsearch_metrics.registry import djelme_registry
@@ -32,9 +30,8 @@ class TestDjelmeSetup(SimpleDjelmeTestCase):
         assert "Synchronized recordtypes." in out
 
     def test_with_invalid_app(self):
-        with self.assertRaises(CommandError) as _raises:
+        with self.assertRaises(LookupError):
             self.run_mgmt_command(djelme_backend_setup, "notanapp")
-        assert "No recordtypes found for app 'notanapp'" in str(_raises.exception)
 
     def test_with_app_label(self):
         class DummyMetric2(elastic8.SimpleRecord):
