@@ -53,7 +53,7 @@ class TestNamesAndPatterns(SimpleDjelmeTestCase):
         _thingevent = ThingHappened(timestamp=_stamp, thing_id="hi")
         self.assertEqual(
             _thingevent.djelme_index_name(),
-            "dummy8app_happen_2020.",
+            "dummy8app_happen_2020.2.",
         )
         _thingreport = ThingHappeningsReport(
             timestamp=_stamp,
@@ -63,7 +63,7 @@ class TestNamesAndPatterns(SimpleDjelmeTestCase):
         )
         self.assertEqual(
             _thingreport.djelme_index_name(),
-            "blarg_dummy8app_thinghappeningsreport_1999.3.",
+            "blarg_dummy8app_thinghappeningsreport_1999.",
         )
         _kv = SimpleKV(key="wha", val=0)
         self.assertEqual(
@@ -89,7 +89,7 @@ class TestNamesAndPatterns(SimpleDjelmeTestCase):
             _thingevent = ThingHappened(timestamp=_stamp, thing_id="ha")
             self.assertEqual(
                 _thingevent.djelme_index_name(),
-                "dummy8app_happen_2020.",
+                "dummy8app_happen_2020.2.",
             )
             _thingreport = ThingHappeningsReport(
                 timestamp=_stamp,
@@ -99,80 +99,99 @@ class TestNamesAndPatterns(SimpleDjelmeTestCase):
             )
             self.assertEqual(
                 _thingreport.djelme_index_name(),
-                "blarg_dummy8app_thinghappeningsreport_1999.3.",
+                "blarg_dummy8app_thinghappeningsreport_1999.",
             )
 
     def test_format_timeseries_index_pattern__lotsa_parts(self):
         _timeparts = (2020, 2, 14, 0, 1, 2)
         self.assertEqual(
-            Dummy8Event.format_timeseries_index_pattern(_timeparts),
+            Dummy8Event.timeseries_index_wildcard(_timeparts),
             "dummy8app_dummy8event_2020.2.14.*",
         )
         self.assertEqual(
-            Monthly8Event.format_timeseries_index_pattern(_timeparts),
+            Monthly8Event.timeseries_index_wildcard(_timeparts),
             "dummy8evenzdummy8app_eventlog_2020.2.*",
         )
         self.assertEqual(
-            ThingHappened.format_timeseries_index_pattern(_timeparts),
-            "dummy8app_happen_2020.*",
+            ThingHappened.timeseries_index_wildcard(_timeparts),
+            "dummy8app_happen_2020.2.*",
         )
         self.assertEqual(
-            ThingHappeningsReport.format_timeseries_index_pattern(_timeparts),
-            "blarg_dummy8app_thinghappeningsreport_2020.2.*",
+            ThingHappeningsReport.timeseries_index_wildcard(_timeparts),
+            "blarg_dummy8app_thinghappeningsreport_2020.*",
         )
 
     def test_format_timeseries_index_pattern__some_parts(self):
         _timeparts = (2020, 2, 14)
         self.assertEqual(
-            Dummy8Event.format_timeseries_index_pattern(_timeparts),
+            Dummy8Event.timeseries_index_wildcard(_timeparts),
             "dummy8app_dummy8event_2020.2.14.*",
         )
         self.assertEqual(
-            Monthly8Event.format_timeseries_index_pattern(_timeparts),
+            Monthly8Event.timeseries_index_wildcard(_timeparts),
             "dummy8evenzdummy8app_eventlog_2020.2.*",
         )
         self.assertEqual(
-            ThingHappened.format_timeseries_index_pattern(_timeparts),
-            "dummy8app_happen_2020.*",
+            ThingHappened.timeseries_index_wildcard(_timeparts),
+            "dummy8app_happen_2020.2.*",
         )
         self.assertEqual(
-            ThingHappeningsReport.format_timeseries_index_pattern(_timeparts),
-            "blarg_dummy8app_thinghappeningsreport_2020.2.*",
+            ThingHappeningsReport.timeseries_index_wildcard(_timeparts),
+            "blarg_dummy8app_thinghappeningsreport_2020.*",
         )
 
     def test_format_timeseries_index_pattern__one_part(self):
         _timeparts = (2020,)
         self.assertEqual(
-            Dummy8Event.format_timeseries_index_pattern(_timeparts),
+            Dummy8Event.timeseries_index_wildcard(_timeparts),
             "dummy8app_dummy8event_2020.*",
         )
         self.assertEqual(
-            Monthly8Event.format_timeseries_index_pattern(_timeparts),
+            Monthly8Event.timeseries_index_wildcard(_timeparts),
             "dummy8evenzdummy8app_eventlog_2020.*",
         )
         self.assertEqual(
-            ThingHappened.format_timeseries_index_pattern(_timeparts),
+            ThingHappened.timeseries_index_wildcard(_timeparts),
             "dummy8app_happen_2020.*",
         )
         self.assertEqual(
-            ThingHappeningsReport.format_timeseries_index_pattern(_timeparts),
+            ThingHappeningsReport.timeseries_index_wildcard(_timeparts),
             "blarg_dummy8app_thinghappeningsreport_2020.*",
+        )
+
+    def test_format_timeseries_index_pattern__no_parts(self):
+        _timeparts = ()
+        self.assertEqual(
+            Dummy8Event.timeseries_index_wildcard(_timeparts),
+            "dummy8app_dummy8event_*",
+        )
+        self.assertEqual(
+            Monthly8Event.timeseries_index_wildcard(_timeparts),
+            "dummy8evenzdummy8app_eventlog_*",
+        )
+        self.assertEqual(
+            ThingHappened.timeseries_index_wildcard(_timeparts),
+            "dummy8app_happen_*",
+        )
+        self.assertEqual(
+            ThingHappeningsReport.timeseries_index_wildcard(_timeparts),
+            "blarg_dummy8app_thinghappeningsreport_*",
         )
 
     def test_format_index_pattern_respects_date_format_setting(self):
         with self.settings(DJELME_DEFAULT_TIMEDEPTH=4):
             _timeparts = (2020, 2, 14, 0, 1, 2)
             self.assertEqual(
-                Dummy8Event.format_timeseries_index_pattern(_timeparts),
+                Dummy8Event.timeseries_index_wildcard(_timeparts),
                 "dummy8app_dummy8event_2020.2.14.0.*",
             )
             self.assertEqual(
-                Monthly8Event.format_timeseries_index_pattern(_timeparts),
+                Monthly8Event.timeseries_index_wildcard(_timeparts),
                 "dummy8evenzdummy8app_eventlog_2020.2.*",
             )
             self.assertEqual(
-                ThingHappened.format_timeseries_index_pattern(_timeparts),
-                "dummy8app_happen_2020.*",
+                ThingHappened.timeseries_index_wildcard(_timeparts),
+                "dummy8app_happen_2020.2.*",
             )
 
 
@@ -393,7 +412,7 @@ class TestWithoutAutosetup(NoSetupRealElasticTestCase):
     def test_cannot_save_with_wrong_template_pattern(self):
         with mock.patch.object(
             Dummy8Event,
-            "format_timeseries_index_pattern",
+            "timeseries_index_wildcard",
             return_value="wrong_pattern_haha_*",
         ):
             Dummy8Event.init()
@@ -426,7 +445,7 @@ class TestWithoutAutosetup(NoSetupRealElasticTestCase):
         ThingHappened.init()
         _client = _es8_client()
         _template_name = ThingHappened.get_timeseries_template_name()
-        _index_pattern = ThingHappened.format_timeseries_index_pattern()
+        _index_pattern = ThingHappened.timeseries_index_wildcard()
         _template_resp = _client.indices.get_index_template(name=_template_name)
         (_t_info,) = _template_resp["index_templates"]
         self.assertEqual(_t_info["name"], _template_name)
@@ -439,7 +458,7 @@ class TestWithoutAutosetup(NoSetupRealElasticTestCase):
         self.assertEqual(_properties["thing_id"], {"type": "keyword"})
         self.assertEqual(_properties["happen_code"], {"type": "keyword"})
         # no indexes; only the template
-        self.assertFalse(list(ThingHappened.each_timeseries_index()))
+        self.assertFalse(list(ThingHappened.each_existing_index()))
 
     def test_check_djelme_setup(self):
         with self.assertRaises(IndexTemplateNotFoundError):
@@ -476,8 +495,8 @@ class TestDailyIndexes(RealElasticTestCase):
 
     def test_indexes(self):
         _index_names = {
-            _strip_test_prefix(_name)
-            for _name, _ in Dummy8Event.each_timeseries_index()
+            _strip_test_prefix(_index_status.index_name)
+            for _index_status in Dummy8Event.each_existing_index()
         }
         self.assertEqual(
             _index_names,
@@ -538,8 +557,8 @@ class TestMonthlyIndexes(RealElasticTestCase):
 
     def test_indexes(self):
         _index_names = {
-            _strip_test_prefix(_name)
-            for _name, _ in Monthly8Event.each_timeseries_index()
+            _strip_test_prefix(_index_status.index_name)
+            for _index_status in Monthly8Event.each_existing_index()
         }
         self.assertEqual(
             _index_names,
@@ -599,15 +618,17 @@ class TestYearlyIndexes(RealElasticTestCase):
 
     def test_indexes(self):
         _index_names = {
-            _strip_test_prefix(_name)
-            for _name, _ in ThingHappened.each_timeseries_index()
+            _strip_test_prefix(_index_status.index_name)
+            for _index_status in ThingHappened.each_existing_index()
         }
         self.assertEqual(
             _index_names,
             {
-                "dummy8app_happen_1234.",
-                "dummy8app_happen_1235.",
-                "dummy8app_happen_2345.",
+                "dummy8app_happen_1234.5.",
+                "dummy8app_happen_1234.6.",
+                "dummy8app_happen_1235.5.",
+                "dummy8app_happen_2345.6.",
+                "dummy8app_happen_2345.7.",
             },
         )
 
@@ -644,7 +665,7 @@ class TestYearlyIndexes(RealElasticTestCase):
         )
 
 
-class TestCyclicRecord(RealElasticTestCase):
+class TestCyclicReport(RealElasticTestCase):
     def setUp(self):
         super().setUp()
         ThingHappeningsReport.record(
@@ -672,14 +693,13 @@ class TestCyclicRecord(RealElasticTestCase):
 
     def test_indexes(self):
         _index_names = {
-            _strip_test_prefix(_name)
-            for _name, _ in ThingHappeningsReport.each_timeseries_index()
+            _strip_test_prefix(_index_status.index_name)
+            for _index_status in ThingHappeningsReport.each_existing_index()
         }
         self.assertEqual(
             _index_names,
             {
-                "dummy8app_thinghappeningsreport_2000.1.",
-                "dummy8app_thinghappeningsreport_2000.2.",
+                "dummy8app_thinghappeningsreport_2000.",
             },
         )
 
