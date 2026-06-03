@@ -3,6 +3,8 @@ import collections
 import datetime
 import typing
 
+from elasticsearch_metrics.util.index_status import DjelmeIndexStatus
+
 __all__ = (
     "ProtoDjelmeBackend",
     "ProtoDjelmeImp",
@@ -58,6 +60,11 @@ class ProtoDjelmeRecord(typing.Protocol):
         until_when: tuple[int, ...] | datetime.date,
         **kwargs: typing.Any,
     ) -> typing.Any: ...
+
+    @classmethod
+    def each_existing_index(
+        cls, using: str | None = None
+    ) -> collections.abc.Iterator[DjelmeIndexStatus]: ...
 
     # @classmethod
     # def each_timeseries_index_status(cls) -> collections.abc.Iterable[str]: ...

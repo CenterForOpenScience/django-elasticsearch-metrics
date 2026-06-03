@@ -1,6 +1,6 @@
 [project]
 name = "django-elasticsearch-metrics"
-version = "2026.0.5"
+version = "2026.0.6"
 description = "Django app for storing time-series metrics in Elasticsearch."
 authors = [
     {name = "CenterForOpenScience", email = "support@cos.io"}

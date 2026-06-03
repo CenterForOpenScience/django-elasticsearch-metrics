@@ -1,3 +1,5 @@
+import datetime
+
 from elasticsearch8 import dsl as esdsl
 from elasticsearch_metrics.imps import elastic8 as djelme
 
@@ -33,10 +35,12 @@ class ThingHappened(djelme.EventRecord):
 
     class Meta:
         timeseries_recordtype_name = "happen"
-        timeseries_index_timedepth = 1  # yearly timeseries indexes
+        timeseries_index_timedepth = 2  # monthly timeseries indexes
+        # keep ninety days of data
+        timeseries_index_expiration = datetime.timedelta(days=90)
 
 
-class ThingHappeningsReport(djelme.CyclicRecord):
+class ThingHappeningsReport(djelme.CyclicReport):
     CYCLE_TIMEDEPTH = 2
     UNIQUE_TOGETHER_FIELDS = ("cycle_coverage", "thing_id")
 
@@ -45,7 +49,7 @@ class ThingHappeningsReport(djelme.CyclicRecord):
 
     class Meta:
         index_name_prefix = "blarg_"
-        timeseries_index_timedepth = 2  # monthly timeseries indexes
+        timeseries_index_timedepth = 1  # yearly timeseries indexes
 
 
 class SimpleKV(djelme.SimpleRecord):

@@ -14,12 +14,13 @@
 __all__ = (
     "EventRecord",
     "CountedUsageRecord",
-    "CyclicRecord",
+    "CyclicReport",
     # for ProtoDjelmeImp:
     "djelme_backend",
     "djelme_when_ready",
 )
-import collections
+from collections import ChainMap
+import collections.abc as cabc
 import dataclasses
 import datetime
 import functools
@@ -41,9 +42,20 @@ from elasticsearch_metrics.protocols import (
     ProtoCountedUsage,
     ProtoDjelmeRecord,
 )
-from elasticsearch_metrics.util import timeseries_naming
+from elasticsearch_metrics.util.timeseries_naming import (
+    TimeseriesIndexNaming,
+    TimeseriesRangePattern,
+    format_template_name,
+)
 from elasticsearch_metrics.util.django import find_app_label_for_module
-from elasticsearch_metrics.util.timeparts import format_full_timeparts, format_timeparts
+from elasticsearch_metrics.util.index_status import DjelmeIndexStatus
+from elasticsearch_metrics.util.timeparts import (
+    serialize_timeparts,
+    TimepartStrat,
+    GregorianTime,
+    Timeparts,
+    AbstractTimeparts,
+)
 from elasticsearch_metrics.util.anon_enough import opaque_key, opaque_sessionhour_id
 
 logger = logging.getLogger(__name__)
@@ -130,10 +142,10 @@ class _DjelmeRecordMetaclass(IndexMeta):
         and Index.settings, Index.analyzers, and Index.using are inherited
         (but not Index.name or Index.aliases)
         """
-        _base_index_configs = collections.ChainMap(
+        _base_index_configs = ChainMap(
             *(base._index.to_dict() for base in bases if hasattr(base, "_index"))
         )
-        _index_opts = opts or type("Index", (), {})
+        _index_opts: typing.Any = opts or type("Index", (), {})
         if not hasattr(_index_opts, "settings") and (
             _inherited_settings := _base_index_configs.get("settings")
         ):
@@ -191,7 +203,7 @@ class BaseDjelmeRecord(esdsl.Document, metaclass=_DjelmeRecordMetaclass):
     'elasticsearch_metrics'
     """
 
-    UNIQUE_TOGETHER_FIELDS: typing.ClassVar[collections.abc.Iterable[str]] = ()
+    UNIQUE_TOGETHER_FIELDS: typing.ClassVar[cabc.Iterable[str]] = ()
 
     class Meta:
         abstract = True
@@ -239,6 +251,12 @@ class BaseDjelmeRecord(esdsl.Document, metaclass=_DjelmeRecordMetaclass):
         )
         assert isinstance(_name_prefix, str)
         return _name_prefix
+
+    @classmethod
+    def each_existing_index(
+        cls, using: str | Elastic8Client | None = None
+    ) -> cabc.Iterator[DjelmeIndexStatus]:
+        raise NotImplementedError
 
     @classmethod
     def _get_djelme_backend(cls) -> "DjelmeElastic8Backend":
@@ -316,7 +334,7 @@ class BaseDjelmeRecord(esdsl.Document, metaclass=_DjelmeRecordMetaclass):
             # make it unique by setting doc id in elasticsearch
             self.meta.id = opaque_key(_unique_together)
 
-    def _get_unique_together_values(self) -> list:
+    def _get_unique_together_values(self) -> list[typing.Any]:
         return [
             getattr(self, _field_name)
             for _field_name in (self.UNIQUE_TOGETHER_FIELDS or ())
@@ -395,6 +413,20 @@ class SimpleRecord(BaseDjelmeRecord, metaclass=_SimpleRecordMetaclass):
         cls._index.delete(using=es_client, ignore_unavailable=True)
 
     @classmethod
+    def each_existing_index(
+        cls, using: str | Elastic8Client | None = None
+    ) -> cabc.Iterator[DjelmeIndexStatus]:
+        """yield existing index name, if any
+
+        implement BaseDjelmeRecord.each_existing_index
+        """
+        _resp = cls._get_connection(using).indices.get(
+            index=cls.djelme_index_name(), features=",", ignore_unavailable=True
+        )
+        for _index_name in _resp.keys():
+            yield DjelmeIndexStatus(_index_name)
+
+    @classmethod
     def refresh(cls, using: str | None = None) -> None:
         assert not cls.is_abstract
         cls._index.refresh(using=using)
@@ -433,7 +465,7 @@ class TimeseriesRecord(BaseDjelmeRecord):
         assert not cls.is_abstract
         return super().search(
             using=using,
-            index=(index or cls.format_timeseries_index_pattern()),
+            index=(index or cls.timeseries_index_wildcard()),
         )
 
     @classmethod
@@ -442,13 +474,19 @@ class TimeseriesRecord(BaseDjelmeRecord):
         from_when: tuple[int, ...] | datetime.date,
         until_when: tuple[int, ...] | datetime.date,
     ) -> typing.Any:
-        _index_pattern = cls.format_timeseries_index_pattern_for_range(
-            from_when, until_when
-        )
+        _index_pattern = cls.timeseries_index_range_pattern(from_when, until_when)
         _timeseries_q = esdsl.query.Range(
             timeseries_timeparts={
-                "gte": format_full_timeparts(from_when),
-                "lt": format_full_timeparts(until_when),
+                "gte": serialize_timeparts(
+                    cls.get_timepart_strat().get_timeparts(
+                        from_when, pad=False, truncate=False
+                    )
+                ),
+                "lt": serialize_timeparts(
+                    cls.get_timepart_strat().get_timeparts(
+                        until_when, pad=False, truncate=False
+                    )
+                ),
             }
         )
         return cls.search(index=_index_pattern).filter(_timeseries_q)
@@ -457,20 +495,34 @@ class TimeseriesRecord(BaseDjelmeRecord):
     def refresh(cls, using: str | None = None) -> None:
         assert not cls.is_abstract
         cls._get_connection(using).indices.refresh(
-            index=cls.format_timeseries_index_pattern()
+            index=cls.timeseries_index_wildcard()
         )
 
     @classmethod
-    def each_timeseries_index(
-        cls, using: str | None = None
-    ) -> collections.abc.Iterator[tuple[str, dict[str, typing.Any]]]:
+    def each_existing_index(
+        cls, using: str | Elastic8Client | None = None
+    ) -> cabc.Iterator[DjelmeIndexStatus]:
+        """yield status for each existing index
+
+        implement BaseDjelmeRecord.each_existing_index
+        """
         _resp = cls._get_connection(using).indices.get(
-            index=cls.format_timeseries_index_pattern(),
+            index=cls.timeseries_index_wildcard(),
         )
-        for _index_name, _index_info in _resp.items():
-            assert isinstance(_index_name, str)
-            assert isinstance(_index_info, dict)
-            yield _index_name, _index_info
+        _expired_if_before = (
+            cls.get_timepart_strat().get_timeparts(utcnow() - _expiration_delta)
+            if (_expiration_delta := cls.get_timeseries_index_expiration()) is not None
+            else None
+        )
+        for _index_name in sorted(_resp.keys()):
+            if _expired_if_before is None:
+                _is_expired = False
+            else:
+                _parsed = cls.parse_timeseries_index_name(_index_name)
+                _is_expired = bool(
+                    _parsed.timeparts and (_parsed.timeparts < _expired_if_before)
+                )
+            yield DjelmeIndexStatus(_index_name, _is_expired)
 
     @classmethod
     def do_teardown(
@@ -481,10 +533,8 @@ class TimeseriesRecord(BaseDjelmeRecord):
     ) -> None:
         assert not cls.is_abstract
         _client = cls._get_connection(using)
-        _indexname_wildcard = cls.format_timeseries_index_pattern()
-        _indices = _client.indices.get(index=_indexname_wildcard, features=",")
-        for _index_name in _indices.keys():
-            _client.indices.delete(index=_index_name)
+        for _index_status in cls.each_existing_index(using=_client):
+            cls.delete_index(_index_status.index_name, using=_client)
         if not keep_templates:
             _templatename = cls.get_timeseries_template_name()
             try:
@@ -497,12 +547,12 @@ class TimeseriesRecord(BaseDjelmeRecord):
         assert not cls.is_abstract
         return cls._index.as_composable_template(
             template_name=cls.get_timeseries_template_name(),
-            pattern=cls.format_timeseries_index_pattern(),
+            pattern=cls.timeseries_index_wildcard(),
         )
 
     @classmethod
     def get_timeseries_template_name(cls) -> str:
-        _template_name = timeseries_naming.format_template_name(
+        _template_name = format_template_name(
             cls.app_label, cls.get_timeseries_recordtype_name()
         )
         return "".join((cls.get_index_name_prefix(), _template_name))
@@ -516,29 +566,53 @@ class TimeseriesRecord(BaseDjelmeRecord):
         return _recordtype_name
 
     @classmethod
-    def format_timeseries_index_pattern(cls, timeparts: tuple[int, ...] = ()) -> str:
-        _pattern = timeseries_naming.format_index_pattern(
-            app_label=cls.app_label,
-            recordtype=cls.get_timeseries_recordtype_name(),
-            timeparts=timeparts,
-            max_timedepth=cls.get_timeseries_index_timedepth(),
+    def timeseries_index_naming(
+        cls, timeparts: AbstractTimeparts | datetime.date | str
+    ) -> TimeseriesIndexNaming:
+        return TimeseriesIndexNaming(
+            cls.app_label,
+            cls.get_timeseries_recordtype_name(),
+            timeparts,
+            cls.get_timepart_strat(),
+            prefix=cls.get_index_name_prefix(),
         )
-        return "".join((cls.get_index_name_prefix(), _pattern))
 
     @classmethod
-    def format_timeseries_index_pattern_for_range(
+    def parse_timeseries_index_name(cls, index_name: str) -> TimeseriesIndexNaming:
+        _parsed = TimeseriesIndexNaming.parse(
+            index_name,
+            timepart_strat=cls.get_timepart_strat(),
+            prefix=cls.get_index_name_prefix(),
+        )
+        if (
+            _parsed.app_label.lower() != cls.app_label.lower()
+            or _parsed.recordtype.lower()
+            != cls.get_timeseries_recordtype_name().lower()
+        ):
+            raise ValueError(f"index {index_name!r} does not belong to {cls}")
+        return _parsed
+
+    @classmethod
+    def timeseries_index_wildcard(cls, timeparts: tuple[int, ...] = ()) -> str:
+        _naming = cls.timeseries_index_naming(timeparts)
+        return _naming.to_str(wildcard=True)
+
+    @classmethod
+    def timeseries_index_range_pattern(
         cls,
         from_when: tuple[int, ...] | datetime.date,
         until_when: tuple[int, ...] | datetime.date | None,
     ) -> str:
-        _pattern = timeseries_naming.format_index_pattern_for_range(
-            cls.app_label,
-            cls.get_timeseries_recordtype_name(),
-            from_when,
-            until_when or utcnow(),
-            timedepth=cls.get_timeseries_index_timedepth(),
+        return str(
+            TimeseriesRangePattern(
+                cls.app_label,
+                cls.get_timeseries_recordtype_name(),
+                from_when,
+                until_when or utcnow(),
+                cls.get_timepart_strat(),
+                index_name_prefix=cls.get_index_name_prefix(),
+            )
         )
-        return "".join((cls.get_index_name_prefix(), _pattern))
 
     @classmethod
     def get_timeseries_index_timedepth(cls) -> int:
@@ -552,12 +626,16 @@ class TimeseriesRecord(BaseDjelmeRecord):
         return _timedepth
 
     @classmethod
+    def get_timepart_strat(cls) -> TimepartStrat:
+        return GregorianTime(cls.get_timeseries_index_timedepth())
+
+    @classmethod
     def _default_index(cls, index=None):
         """Overrides Document._default_index so that .search, .get, etc.
         use the metric's template pattern as the default index
         """
         assert not cls.is_abstract
-        return index or cls.format_timeseries_index_pattern()
+        return index or cls.timeseries_index_wildcard()
 
     @classmethod
     def sync_index_template(cls, using=None):  # -> ComposableIndexTemplate:
@@ -630,11 +708,29 @@ class TimeseriesRecord(BaseDjelmeRecord):
                     settings_in_sync=settings_in_sync,
                 )
 
+    @classmethod
+    def get_timeseries_index_expiration(cls) -> datetime.timedelta | None:
+        _val = cls._get_meta_attr("timeseries_index_expiration")
+        if not (_val is None or isinstance(_val, datetime.timedelta)):
+            raise ImproperlyConfigured(
+                "timeseries_index_expiration must be a timedelta", _val
+            )
+        return _val
+
+    @classmethod
+    def delete_index(
+        cls,
+        index_name: str,
+        using: str | Elastic8Client | None = None,
+    ) -> None:
+        _client = cls._get_connection(using)
+        _client.indices.delete(index=index_name)
+
     ###
     # instance methods
 
-    def get_timeseries_timeparts(self) -> str:
-        """semverlike string of timeparts, used to choose a timeseries index"""
+    def get_timeseries_timeparts(self) -> Timeparts:
+        """semverlike string of timeparts, used to choose a timeseries index and for range queries"""
         raise NotImplementedError(
             f"{self.__class__!r} must implement get_timeseries_timeparts"
         )
@@ -644,13 +740,7 @@ class TimeseriesRecord(BaseDjelmeRecord):
 
         for ProtoDjelmeRecord
         """
-        _index_name = timeseries_naming.format_index_name(
-            app_label=self.__class__.app_label,
-            recordtype=self.get_timeseries_recordtype_name(),
-            timeparts=self.timeseries_timeparts or self.get_timeseries_timeparts(),
-            max_timedepth=self.get_timeseries_index_timedepth(),
-        )
-        return "".join((self.get_index_name_prefix(), _index_name))
+        return str(self.timeseries_index_naming(self.get_timeseries_timeparts()))
 
     def clean(self) -> None:
         """save the record to a timeseries index
@@ -658,10 +748,9 @@ class TimeseriesRecord(BaseDjelmeRecord):
         extend `elasticsearch8.dsl.Document.save` to choose a specific timeseries index
         """
         super().clean()
-        self.timeseries_timeparts = self.get_timeseries_timeparts()
+        self.timeseries_timeparts = serialize_timeparts(self.get_timeseries_timeparts())
 
 
-# TODO: EventRecord expiration
 # class EventRecord(TimeseriesRecord, ProtoExpirableRecord?):
 class EventRecord(TimeseriesRecord):
     timestamp: datetime.datetime = esdsl.mapped_field(default_factory=lambda: utcnow())
@@ -669,12 +758,12 @@ class EventRecord(TimeseriesRecord):
     class Meta:
         abstract = True
 
-    def get_timeseries_timeparts(self) -> str:
-        """semverlike string of timeparts, used to choose a timeseries index
+    def get_timeseries_timeparts(self) -> Timeparts:
+        """semverlike string of timeparts, used to choose a timeseries index and for range queries
 
         for TimeseriesRecord
         """
-        return format_full_timeparts(self.timestamp)
+        return self.get_timepart_strat().get_timeparts(self.timestamp, truncate=False)
 
 
 # class CountedUsageRecord(EventRecord, ProtoCountedUsage):
@@ -722,12 +811,10 @@ class CountedUsageRecord(EventRecord):
         return _new_record
 
 
-class CyclicRecord(TimeseriesRecord):
-    """CyclicRecord: for recording something on a regular cycle"""
+class CyclicReport(TimeseriesRecord):
+    """CyclicReport: for recording something on a regular cycle"""
 
-    UNIQUE_TOGETHER_FIELDS: typing.ClassVar[collections.abc.Iterable[str]] = (
-        "cycle_coverage",
-    )
+    UNIQUE_TOGETHER_FIELDS: typing.ClassVar[cabc.Iterable[str]] = ("cycle_coverage",)
 
     CYCLE_TIMEDEPTH: typing.ClassVar[int]  # required on subclasses
 
@@ -737,7 +824,7 @@ class CyclicRecord(TimeseriesRecord):
     class Meta:
         abstract = True
 
-    def __init_subclass__(cls, **kwargs) -> None:
+    def __init_subclass__(cls, **kwargs: typing.Any) -> None:
         super().__init_subclass__(**kwargs)
         if not cls.is_abstract:
             _cycle_timedepth = getattr(cls, "CYCLE_TIMEDEPTH", None)
@@ -747,24 +834,36 @@ class CyclicRecord(TimeseriesRecord):
                 )
             if "cycle_coverage" not in cls.UNIQUE_TOGETHER_FIELDS:
                 raise ImproperlyConfigured(
-                    f'CyclicRecord subclasses must have "cycle_coverage" in UNIQUE_TOGETHER_FIELDS ({cls!r})'
+                    f'CyclicReport subclasses must have "cycle_coverage" in UNIQUE_TOGETHER_FIELDS ({cls!r})'
                 )
 
-    def get_timeseries_timeparts(self) -> str:
-        """semverlike string of timeparts, used to choose a timeseries index
+    @classmethod
+    def get_cycle_timepart_strat(cls) -> TimepartStrat:
+        return GregorianTime(cls.CYCLE_TIMEDEPTH)
+
+    def clean(self) -> None:
+        self.cycle_coverage = serialize_timeparts(
+            self.get_cycle_timepart_strat().get_timeparts(self.cycle_coverage)
+        )
+        super().clean()
+
+    def get_timeseries_timeparts(self) -> Timeparts:
+        """semverlike string of timeparts, used to choose a timeseries index and for range queries
 
         for TimeseriesRecord
 
-        use `cycle_coverage`; index by the start of the covered timespan
+        mirror `cycle_coverage`; index by the start of the covered timespan
         """
-        return format_timeparts(self.cycle_coverage, self.CYCLE_TIMEDEPTH)
+        return self.get_timepart_strat().get_timeparts(
+            self.cycle_coverage, truncate=False, pad=False
+        )
 
 
 @dataclasses.dataclass
 class DjelmeElastic8Backend:
     """DjelmeElastic8Backend: elastic8 backend for djelme (for use by generic djelme code)"""
 
-    _NON_PASSTHRU_KWARGS: typing.ClassVar[collections.abc.Collection[str]] = {
+    _NON_PASSTHRU_KWARGS: typing.ClassVar[cabc.Collection[str]] = {
         "djelme_default_index_name_prefix",
     }
 
@@ -798,14 +897,14 @@ class DjelmeElastic8Backend:
             if _key not in self._NON_PASSTHRU_KWARGS
         }
 
-    def djelme_setup(self, recordtypes: collections.abc.Iterable[type]) -> None:
+    def djelme_setup(self, recordtypes: cabc.Iterable[type]) -> None:
         # for ProtoDjelmeBackend
         for _recordtype in recordtypes:
             # TODO: logger.info
             assert issubclass(_recordtype, BaseDjelmeRecord)
             _recordtype.init(using=self._elastic8dsl_connection_name)
 
-    def djelme_teardown(self, recordtypes: collections.abc.Iterable[type]) -> None:
+    def djelme_teardown(self, recordtypes: cabc.Iterable[type]) -> None:
         # for ProtoDjelmeBackend
         for _recordtype in recordtypes:
             assert issubclass(_recordtype, BaseDjelmeRecord)
@@ -825,7 +924,7 @@ djelme_backend = DjelmeElastic8Backend  # for ProtoDjelmeImp
 
 
 def djelme_when_ready(  # for ProtoDjelmeImp
-    backends: collections.abc.Iterable[ProtoDjelmeBackend],
+    backends: cabc.Iterable[ProtoDjelmeBackend],
 ) -> None:
     esdsl.connections.configure(
         **{

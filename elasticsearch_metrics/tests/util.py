@@ -37,9 +37,8 @@ class SimpleDjelmeTestCase(SimpleTestCase):
 
     def enterContext(self, context_manager):
         # unittest.TestCase.enterContext added in python3.11 -- implementing here until 3.10 eol
-        result = context_manager.__enter__()
         self.addCleanup(lambda: context_manager.__exit__(None, None, None))
-        return result
+        return context_manager.__enter__()
 
     def run_mgmt_command(
         self, cmd: str | BaseCommand | types.ModuleType, *args: str, **options: str

@@ -79,12 +79,8 @@ class _DjelmeRegistry:
         if recordtype_name in app_recordtypes:
             # Raise an error for conflicting recordtype names (same behavior as apps.register_model)
             raise RuntimeError(
-                "Conflicting '{}' recordtypes in application '{}': {} and {}.".format(
-                    recordtype_name,
-                    _app_label,
-                    app_recordtypes[recordtype_name],
-                    recordtype,
-                )
+                f"Conflicting {recordtype_name!r} recordtypes in application {_app_label!r}: "
+                f"{app_recordtypes[recordtype_name]} and {recordtype}"
             )
         app_recordtypes[recordtype_name] = recordtype
         self._imp_by_recordtype[recordtype] = imp_module_name
@@ -117,9 +113,7 @@ class _DjelmeRegistry:
             return app_recordtypes[format_namepart(recordtype_name)]
         except KeyError as e:
             raise LookupError(
-                "App '{}' doesn't have a '{}' metric.".format(
-                    app_label, recordtype_name
-                )
+                f"App {app_label!r} doesn't have a {recordtype_name!r} metric."
             ) from e
 
     def get_recordtype_app_label(self, recordtype: type) -> str | None:
@@ -246,10 +240,8 @@ class _DjelmeRegistry:
         self, app_label: str
     ) -> collections.abc.Mapping[str, type]:
         if app_label not in self._all_recordtypes:
-            raise LookupError(
-                "No recordtypes found in app with label '{}'.".format(app_label)
-            )
-        return self._all_recordtypes[app_label]
+            apps.get_app_config(app_label)  # raise LookupError if invalid app
+        return self._all_recordtypes.get(app_label, {})
 
 
 def _import_imp_module(imp_module_name: str) -> ProtoDjelmeImp:

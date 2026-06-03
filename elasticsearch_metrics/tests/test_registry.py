@@ -31,10 +31,7 @@ class TestTimeseriesTypeRegistry(SimpleTestCase):
 
         with self.assertRaises(LookupError) as excinfo:
             djelme_registry.get_recordtype("notanapp", "Dummy8Event")
-        assert (
-            "No recordtypes found in app with label 'notanapp'."
-            in excinfo.exception.args[0]
-        )
+        assert "'notanapp'" in excinfo.exception.args[0]
 
     def test_get_recordtypes(self):
         class AnotherRecord(elastic8.TimeseriesRecord):
@@ -50,10 +47,7 @@ class TestTimeseriesTypeRegistry(SimpleTestCase):
 
         with self.assertRaises(LookupError) as excinfo:
             list(djelme_registry.each_recordtype(app_label="notanapp"))
-        assert (
-            "No recordtypes found in app with label 'notanapp'."
-            in excinfo.exception.args[0]
-        )
+        assert "'notanapp'" in excinfo.exception.args[0]
 
     def test_get_recordtypes_excludes_abstract_recordtypes(self):
         class AbstractRecord(elastic8.TimeseriesRecord):
@@ -67,6 +61,6 @@ class TestTimeseriesTypeRegistry(SimpleTestCase):
         assert elastic8.BaseDjelmeRecord not in djelme_registry.each_recordtype()
         assert elastic8.TimeseriesRecord not in djelme_registry.each_recordtype()
         assert elastic8.EventRecord not in djelme_registry.each_recordtype()
-        assert elastic8.CyclicRecord not in djelme_registry.each_recordtype()
+        assert elastic8.CyclicReport not in djelme_registry.each_recordtype()
         assert AbstractRecord not in djelme_registry.each_recordtype()
         assert ConcreteRecord in djelme_registry.each_recordtype()
