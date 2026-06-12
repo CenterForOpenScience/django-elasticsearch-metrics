@@ -26,6 +26,7 @@ from elasticsearch_metrics import signals
 from elasticsearch_metrics import exceptions
 from elasticsearch_metrics.protocols import ProtoDjelmeBackend
 from elasticsearch_metrics.registry import djelme_registry
+from elasticsearch_metrics.util.index_status import DjelmeIndexStatus
 
 DEFAULT_DATE_FORMAT = "%Y.%m.%d"
 
@@ -277,6 +278,13 @@ class BaseMetric(metaclass=MetricMeta):
         )
         date_formatted = date.strftime(dateformat)
         return f"{cls._template_name}_{date_formatted}"
+
+    @classmethod
+    def each_existing_index(cls, using=None) -> Iterator[DjelmeIndexStatus]:
+        """yield status for each existing index"""
+        _resp = cls._get_connection(using).indices.get(index=cls._template_pattern)
+        for _index_name in sorted(_resp.keys()):
+            yield DjelmeIndexStatus(_index_name, False)
 
 
 class Metric(Document, BaseMetric):

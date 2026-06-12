@@ -16,6 +16,7 @@ class TestDjelmeIndexes(MockConnectionTestCase):
             )
         )
         self.mock_es8_connection.indices.get.side_effect = self._fake_get_indexes
+        self.mock_es6_connection.indices.get.side_effect = self._fake_get_indexes
 
     def _fake_get_indexes(self, *, index, **kwargs):
         if index == "dummy8app_happen_*":
