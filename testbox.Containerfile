@@ -6,7 +6,7 @@ RUN mkdir -p /code
 WORKDIR /code
 
 COPY pyproject.toml poetry.lock ./
-RUN poetry install --compile --no-root --with=dev --extras=elastic8 --extras=anydjango
+RUN poetry install --compile --no-root --with=dev --extras=elastic6 --extras=elastic8 --extras=anydjango
 COPY ./ ./
 RUN poetry install --only-root
 

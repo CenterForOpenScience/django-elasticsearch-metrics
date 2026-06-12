@@ -12,6 +12,9 @@ class TestDjelmeSetup(SimpleDjelmeTestCase):
     def setUp(self):
         self.mock_inits = [
             self.enterContext(
+                unittest.mock.patch("elasticsearch_metrics.imps.elastic6.Metric.init"),
+            ),
+            self.enterContext(
                 unittest.mock.patch(
                     "elasticsearch_metrics.imps.elastic8.TimeseriesRecord.init"
                 ),

@@ -7,13 +7,14 @@ Django app for storing time-series metrics in Elasticsearch.
 python importables:
 - `elasticsearch_metrics`
 - `elasticsearch_metrics.imps.elastic8` (an implementation with elasticsearch 8)
+- `elasticsearch_metrics.imps.elastic6` (an implementation with elasticsearch 6; deprecated)
 - ...
 
 ## Pre-requisites
 
 * Python >=3.10
 * Django 4.2, 5.1, or 5.2
-* Elasticsearch 8
+* Elasticsearch 8 (or 6, for deprecated back-compat)
 
 ## Install
 

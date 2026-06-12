@@ -1,5 +1,13 @@
 version: '3'
 services:
+  elasticsearch6:
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.3.1
+    healthcheck:
+      interval: 30s
+      retries: 10
+      test: curl -s http://localhost:9200/_cluster/health | grep -vq '"status":"red"'
+    networks:
+      - djelme
   elasticsearch8:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.19.11
     environment:
@@ -17,10 +25,13 @@ services:
       context: .
       dockerfile: testbox.Containerfile
     depends_on:
+      elasticsearch6:
+        condition: service_healthy
       elasticsearch8:
         condition: service_healthy
     environment:
       # TOXENV: py310-django42
+      ELASTICSEARCH6_URL: elasticsearch6:9200
       ELASTICSEARCH8_URL: http://elasticsearch8:9200
     networks:
       - djelme

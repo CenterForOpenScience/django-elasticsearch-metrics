@@ -789,6 +789,47 @@ urllib3 = ">=1.26.2,<3"
 develop = ["aiohttp", "furo", "httpx", "opentelemetry-api", "opentelemetry-sdk", "orjson", "pytest", "pytest-asyncio", "pytest-cov", "pytest-httpserver", "pytest-mock", "requests", "respx", "sphinx (>2)", "sphinx-autodoc-typehints", "trustme"]
 
 [[package]]
+name = "elasticsearch6"
+version = "6.4.2"
+description = "Python client for Elasticsearch 6.x"
+optional = true
+python-versions = "*"
+groups = ["main"]
+markers = "extra == \"elastic6\""
+files = [
+    {file = "elasticsearch6-6.4.2-py2.py3-none-any.whl", hash = "sha256:40c777d193a021a77bd06e8b0c3284d7a9c3d15ac080a9fa616ddfa58058a73d"},
+    {file = "elasticsearch6-6.4.2.tar.gz", hash = "sha256:91e304f227cd3cfc17ad3b5ec0518cfcc31af9157fae92aa6f97d20941adc209"},
+]
+
+[package.dependencies]
+urllib3 = ">=1.21.1"
+
+[package.extras]
+develop = ["coverage", "mock", "nose", "nosexcover", "pyaml", "requests (>=2.0.0,<3.0.0)", "sphinx (<1.7)", "sphinx-rtd-theme"]
+requests = ["requests (>=2.4.0,<3.0.0)"]
+
+[[package]]
+name = "elasticsearch6-dsl"
+version = "6.4.0"
+description = "Python client for Elasticsearch"
+optional = true
+python-versions = "*"
+groups = ["main"]
+markers = "extra == \"elastic6\""
+files = [
+    {file = "elasticsearch6-dsl-6.4.0.tar.gz", hash = "sha256:4bbc60919b73484d028eca31f749f0eea80d8b0bfe0a9a33b54eb0afca1d9b5f"},
+    {file = "elasticsearch6_dsl-6.4.0-py2.py3-none-any.whl", hash = "sha256:a5767ef65c50f7c8af7ba6c176bd8df2c1fb501c644bc196cbd675f15c0f2be1"},
+]
+
+[package.dependencies]
+elasticsearch6 = ">=6.0.0,<7.0.0"
+python-dateutil = "*"
+six = "*"
+
+[package.extras]
+develop = ["coverage (<5.0.0)", "mock", "pytest (>=3.0.0)", "pytest-cov", "pytz", "sphinx", "sphinx-rtd-theme"]
+
+[[package]]
 name = "elasticsearch8"
 version = "8.19.3"
 description = "Python client for Elasticsearch"
@@ -1687,7 +1728,7 @@ description = "Extensions to the standard Python datetime module"
 optional = true
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
 groups = ["main"]
-markers = "extra == \"elastic8\""
+markers = "extra == \"elastic6\" or extra == \"elastic8\""
 files = [
     {file = "python-dateutil-2.9.0.post0.tar.gz", hash = "sha256:37dd54208da7e1cd875388217d5e00ebd4179249f90fb72437e91a35459a0ad3"},
     {file = "python_dateutil-2.9.0.post0-py2.py3-none-any.whl", hash = "sha256:a8b2bc7bffae282281c8140a97d3aa9c14da0b136dfe83f850eea9a5f7470427"},
@@ -1933,7 +1974,7 @@ description = "Python 2 and 3 compatibility utilities"
 optional = true
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
 groups = ["main"]
-markers = "extra == \"elastic8\""
+markers = "extra == \"elastic6\" or extra == \"elastic8\""
 files = [
     {file = "six-1.17.0-py2.py3-none-any.whl", hash = "sha256:4721f391ed90541fddacab5acf947aa0d3dc7d27b2e1e8eda2be8970586c3274"},
     {file = "six-1.17.0.tar.gz", hash = "sha256:ff70335d468e7eb6ec65b95b99d3a2836546063f63acc5171de367e834932a81"},
@@ -2100,7 +2141,7 @@ files = [
     {file = "urllib3-2.6.3-py3-none-any.whl", hash = "sha256:bf272323e553dfb2e87d9bfd225ca7b0f467b919d7bbd355436d3fd37cb0acd4"},
     {file = "urllib3-2.6.3.tar.gz", hash = "sha256:1b62b6884944a57dbe321509ab94fd4d3b307075e0c2eae991ac71ee15ad38ed"},
 ]
-markers = {main = "extra == \"elastic8\""}
+markers = {main = "extra == \"elastic6\" or extra == \"elastic8\""}
 
 [package.extras]
 brotli = ["brotli (>=1.2.0) ; platform_python_implementation == \"CPython\"", "brotlicffi (>=1.2.0.0) ; platform_python_implementation != \"CPython\""]
@@ -2332,9 +2373,10 @@ cffi = ["cffi (>=1.17,<2.0) ; platform_python_implementation != \"PyPy\" and pyt
 
 [extras]
 anydjango = ["django"]
+elastic6 = ["elasticsearch6-dsl"]
 elastic8 = ["elasticsearch8"]
 
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<4"
-content-hash = "c111ea68a38ef36c15e36db09a503bab0fc10e972663c9064997ea6840714bc0"
+content-hash = "c242563df56dbfc5ea7980a7daaccf91b948c08d811386eb3dac80fcdda1b770"

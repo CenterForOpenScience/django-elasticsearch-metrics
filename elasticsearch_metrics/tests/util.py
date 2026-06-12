@@ -81,13 +81,24 @@ class MockConnectionTestCase(SimpleDjelmeTestCase):
     def setUp(self):
         super().setUp()
         clear_setup_check_caches()
+        self.mock_es6_connection = mock.Mock()
         self.mock_es8_connection = mock.Mock()
+        self.mock_es6_connection.index.return_value = {"result": "created"}
         self.mock_es8_connection.index.return_value = {"result": "created"}
+        self.enterContext(
+            mock.patch(
+                "elasticsearch_metrics.imps.elastic6.Document._get_connection",
+                return_value=self.mock_es6_connection,
+            ),
+        )
         self.enterContext(
             mock.patch(
                 "elasticsearch_metrics.imps.elastic8.esdsl.Document._get_connection",
                 return_value=self.mock_es8_connection,
             ),
+        )
+        self.mock_es6_require_been_setup = self.enterContext(
+            mock.patch("elasticsearch_metrics.imps.elastic6.Metric.require_been_setup"),
         )
         self.mock_es8_require_been_setup = self.enterContext(
             mock.patch(
@@ -104,13 +115,18 @@ def prefixed_index_names(prefix: str = ""):
             "elasticsearch_metrics.imps.elastic8.BaseDjelmeRecord.get_index_name_prefix",
             return_value=_name_prefix,
         ),
+        mock.patch(
+            "elasticsearch_metrics.imps.elastic6.BaseMetric.get_index_name_prefix",
+            return_value=_name_prefix,
+        ),
     ):
         yield
 
 
 def clear_setup_check_caches():
-    from elasticsearch_metrics.imps import elastic8
+    from elasticsearch_metrics.imps import elastic6, elastic8
 
+    elastic6.Metric.require_been_setup.cache_clear()
     elastic8.BaseDjelmeRecord.require_been_setup.cache_clear()
 
 

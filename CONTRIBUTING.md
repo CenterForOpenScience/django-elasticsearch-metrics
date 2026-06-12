@@ -36,14 +36,14 @@ install [poetry](https://python-poetry.org):
 pip install poetry
 ```
 
-install the current project (in editable mode) and dependencies (with the `dev` dependency group and the extras `elastic8`, `anydjango`):
+install the current project (in editable mode) and dependencies (with the `dev` dependency group and the extras `elastic6`, `elastic8`, `anydjango`):
 ```
-poetry install --with=dev --extras=elastic8 --extras=anydjango
+poetry install --with=dev --extras=elastic6 --extras=elastic8 --extras=anydjango
 ```
 
 ### run tests and checks
 
-these expect elasticsearch to be running and configured in `elasticsearch_metrics/tests/settings.py` (or set environment variable and `ELASTICSEARCH8_URL`) -- see `using docker-style container tools`, below, for one way to do that
+these expect elasticsearches to be running and configured in `elasticsearch_metrics/tests/settings.py` (or set environment variables `ELASTICSEARCH6_URL` and `ELASTICSEARCH8_URL`) -- see `using docker-style container tools`, below, for one way to do that
 
 running the python module `elasticsearch_metrics.tests` will run tests and linting checks
 -- any code merged to `main` should pass for all supported python and django combinations
@@ -93,9 +93,9 @@ see `testbox.Containerfile` and `docker-compose.yml` for a local setup -- runnin
 
 (note: examples use `pc` aliased to a `docker-compose` equivalent)
 
-start elasticsearch in the background
+start elasticsearches in the background
 ```
-pc up -d elasticsearch8
+pc up -d elasticsearch6 elasticsearch8
 ```
 
 run tests and lint
