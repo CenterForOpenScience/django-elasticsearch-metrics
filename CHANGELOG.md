@@ -21,7 +21,7 @@ Changes:
 Bug fixes:
 
 * Pin to elasticsearch-dsl>=6.0.0,<6.3.0 because version 6.3.0
-  introduces an incompatiblity.
+  introduces an incompatibility.
 
 ## 4.0.3 (2018-10-15)
 

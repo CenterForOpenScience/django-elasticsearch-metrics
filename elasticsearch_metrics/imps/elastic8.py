@@ -658,7 +658,7 @@ class TimeseriesRecord(BaseDjelmeRecord):
         :raise: IndexTemplateNotFoundError if index template does not exist.
         :raise: IndexTemplateOutOfSyncError if mappings, settings, or index patterns
             are out of sync.
-        :return: True if index template exsits and mappings, settings, and index patterns
+        :return: True if index template exists and mappings, settings, and index patterns
             are in sync.
         """
         client = cls._get_connection(using)
@@ -868,7 +868,7 @@ class DjelmeElastic8Backend:
     }
 
     backend_name: str
-    imp_kwargs: dict[str, str]  # pass-thru to elasticsearch connection kwargs
+    imp_kwargs: dict[str, str]  # pass-through to elasticsearch connection kwargs
 
     def djelme_backend_name(self) -> str:  # for ProtoDjelmeBackend
         return self.backend_name
